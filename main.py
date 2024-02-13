@@ -36,8 +36,9 @@ print(philo_dataset[16])
 
 #POPULATE TEMP DATABSE WITH SOME DOCUEMNTS
 docs = []
+
 for entry in philo_dataset:
-    metadata = {"author": entry["author"]}
+    metadata = {"author": entry["author"]} 
     if entry["tags"]:
         # Add metadata tags to the metadata dictionary
         for tag in entry["tags"].split(";"):
@@ -48,7 +49,7 @@ for entry in philo_dataset:
 
 inserted_ids = vstore.add_documents(docs)
 print(f"\nInserted {len(inserted_ids)} documents.")
-#print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).find())
+#print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).find_one())
 print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
 prompt_template = """
