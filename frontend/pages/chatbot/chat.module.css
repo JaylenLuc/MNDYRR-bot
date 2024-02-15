@@ -1,0 +1,16 @@
+.mainbox{
+    padding: 20px;
+    box-shadow: 5px 10px black;
+    border-radius: 25px;
+    width: 60%;
+    height:85vh;
+    margin: auto;
+}
+
+.searchbar{
+    width: 100%;
+    position: relative;
+    bottom: 0; 
+
+
+}
