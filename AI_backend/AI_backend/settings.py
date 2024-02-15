@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+# CORS_ORIGIN_WHITELIST = (
+
+#        'http://localhost:3000',
+
+# )
+
 
 # Application definition
 
@@ -38,8 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'RAG',
-    'rest_framework',
     'AI_Logic',
+    'rest_framework',
     'corsheaders',
 ]
 
@@ -128,4 +134,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ORIGIN_ALLOW_ALL = True  
+CORS_ORIGIN_ALLOW_ALL = True

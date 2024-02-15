@@ -9,7 +9,7 @@ import axios from 'axios';
 export default function chat() {
   //temporary, this variable will store the last valid server return value, the 
   //final version must store all responses 
-  var _temp = ""
+  const [_temp, _set_temp] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -18,7 +18,9 @@ export default function chat() {
     axios.get('http://127.0.0.1:8000/ai/query',{ params: { question: searchQuery } })
     .then(res => {
 
-      console.log(res)
+      console.log(res['data']['response'])
+      _set_temp(res['data']['response'])
+
 
     })
     .catch(err => { 
