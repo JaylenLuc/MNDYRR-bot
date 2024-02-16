@@ -3,7 +3,12 @@ from dotenv import load_dotenv
 from datasets import load_dataset
 from langchain_community.vectorstores.astradb import AstraDB
 from langchain_openai import OpenAIEmbeddings
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
+from langchain.schema import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -18,9 +23,9 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = 0.6
+OPEN_AI_TEMP = 0.7
 
-CONTEXT_COUNT = 3
+CONTEXT_COUNT = 5
 
 def start_RAG():
     print("KEY CONFIG DONE")
@@ -37,14 +42,18 @@ def start_RAG():
     prompt_template = """
     Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
     If the context is insufficient do not say 'I can't provide the answer to your question based on the given context' but rather respond with 'that is a difficult question' 
-    and answer as best as possible.
+    and answer as best as possible. You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
+    relevant advice, or resources to help the individual as much as possible. If you are aware of any resources please provide it for the human. \
+    When communicating with the Human individual, see them as as subjects situated in a social \
+    world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving.
     Context: {context}
     Question: {question}
     Your answer:
     """
 
     model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP)
-
+    model.predict_messages
+    #what we also need to do is fne tune and train data either using a pretrained model or use an empathetic dataset 
 
     return [vstore,prompt_template,model]
 
@@ -69,24 +78,26 @@ def populate_db(vstore, dataset):
 
     inserted_ids = vstore.add_documents(docs)
     print(f"\nInserted {len(inserted_ids)} documents.")
-    #print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).find_one())
+
     print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
 
 def get_response(vstore,prompt_template,model,message):
     print(vstore,prompt_template,model,CONTEXT_COUNT,message)
+
     prompt = ChatPromptTemplate.from_template(prompt_template)
+
     context_retr = vstore.as_retriever(search_kwargs={'k': CONTEXT_COUNT})
+
     chain = (
         {"context": context_retr, "question": RunnablePassthrough()}
         | prompt
         | model
         | StrOutputParser()
     )
-    print(message)
+
+    #invoke with the history of chat messages from the human and the AI at URL: https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent
+    print("messages: ",message)
     response = chain.invoke(message)
     return response
 
-
-# r = start_RAG()
-# print(get_response(*r,3,"How does one reduce their own suffering"))
