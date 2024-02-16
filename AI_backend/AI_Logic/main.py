@@ -39,6 +39,13 @@ def start_RAG():
     )
     print("DB STORE DONE")
 
+    #instead of doing this :
+    #system_template = SystemMessagePromptTemplate.from_template("You are an expert in Data Science and Machine Learning")
+    #user_template = HumanMessagePromptTemplate.from_template("{user_prompt}")   
+    #template = ChatPromptTemplate.from_messages([system_template, user_template])
+    #we do this as an equivalent?
+    
+
     prompt_template = """
     Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
     If the context is insufficient do not say 'I can't provide the answer to your question based on the given context' but rather respond with 'that is a difficult question' 
