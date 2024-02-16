@@ -18,9 +18,9 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = 0.8
+OPEN_AI_TEMP = 0.6
 
-CONTEXT_COUNT = 5
+CONTEXT_COUNT = 3
 
 def start_RAG():
     print("KEY CONFIG DONE")
@@ -35,13 +35,16 @@ def start_RAG():
     print("DB STORE DONE")
 
     prompt_template = """
-    Answer the question using the supplied context at your own discretion. If you don't know the answer, give your best answer.
+    Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
+    If the context is insufficient do not say 'I can't provide the answer to your question based on the given context' but rather respond with 'that is a difficult question' 
+    and answer as best as possible.
     Context: {context}
     Question: {question}
     Your answer:
     """
 
     model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP)
+
 
     return [vstore,prompt_template,model]
 
