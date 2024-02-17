@@ -99,7 +99,7 @@ def get_response(vstore,prompt_template,model,message):
 
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
-    context_retr = vstore.as_retriever(search_kwargs={'k': CONTEXT_COUNT})
+    context_retr = vstore.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
 
     chain = (
         {"context": context_retr, "question": RunnablePassthrough()}
