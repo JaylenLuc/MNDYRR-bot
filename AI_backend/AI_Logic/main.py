@@ -23,7 +23,9 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = 0.7
+OPEN_AI_TEMP = .7
+OPEN_AI_TOP_P = .7
+# OPEN_AI_TOP_K = .7
 
 CONTEXT_COUNT = 5
 
@@ -44,22 +46,25 @@ def start_RAG():
     #user_template = HumanMessagePromptTemplate.from_template("{user_prompt}")   
     #template = ChatPromptTemplate.from_messages([system_template, user_template])
     #we do this as an equivalent?
-    
+
+    #besides from systemMessagePrompt, we can fine tune the LLm and train it on a empathic dataset
 
     prompt_template = """
     Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
-    If the context is insufficient do not say 'I can't provide the answer to your question based on the given context' but rather respond with 'that is a difficult question' 
+    If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with 'that is a difficult question' 
     and answer as best as possible. You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
     relevant advice, or resources to help the individual as much as possible. If you are aware of any resources please provide it for the human. \
     When communicating with the Human individual, see them as as subjects situated in a social \
-    world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving.
+    world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving. \
+    If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
+    Be encouraging, act like you are the human's parent and that you genuinely love them.
     Context: {context}
     Question: {question}
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP)
-    model.predict_messages
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P })
+
     #what we also need to do is fne tune and train data either using a pretrained model or use an empathetic dataset 
 
     return [vstore,prompt_template,model]
