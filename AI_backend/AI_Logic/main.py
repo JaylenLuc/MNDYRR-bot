@@ -65,7 +65,7 @@ def start_RAG():
 
     model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P })
 
-    #what we also need to do is fne tune and train data either using a pretrained model or use an empathetic dataset 
+    #what we also need to do is fne tune and train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
 
     return [vstore,prompt_template,model]
 
