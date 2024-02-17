@@ -47,7 +47,7 @@ def start_RAG():
     #template = ChatPromptTemplate.from_messages([system_template, user_template])
     #we do this as an equivalent?
 
-    #besides from systemMessagePrompt, we can fine tune the LLm and train it on a empathic dataset
+    #besides from systemMessagePrompt/prompt engineering and hyperparameter tuning on nucleus sampling, we can fine tune the LLm and train it on a empathic dataset. I adjusted temp and top_p
 
     prompt_template = """
     Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
