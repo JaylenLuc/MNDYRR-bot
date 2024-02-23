@@ -23,11 +23,13 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = .7
+OPEN_AI_TEMP = .6
 OPEN_AI_TOP_P = .7
 # OPEN_AI_TOP_K = .7
 
+
 CONTEXT_COUNT = 5
+#data for training and for retreival
 
 def start_RAG():
     print("KEY CONFIG DONE")
