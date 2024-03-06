@@ -7,6 +7,9 @@ import { shadows } from '@mui/system';
 import { borders } from '@mui/system';
 import axios from 'axios';
 export default function chat() {
+  //add a disclaimer popup before use of the chat bot section
+  //https:/www.dualdiagnosis.org.uk/chatbot-disclaimer/
+
   //temporary, this variable will store the last valid server return value, the 
   //final version must store all responses 
   const [_temp, _set_temp] = useState("");

@@ -1,4 +1,6 @@
+from json import tool
 import os
+from operator import itemgetter
 from dotenv import load_dotenv
 from datasets import load_dataset
 from langchain_community.vectorstores.astradb import AstraDB
@@ -7,13 +9,20 @@ from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
+    MessagesPlaceholder
 )
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core import documents
 from langchain_core.documents import Document
+from langchain.indexes import VectorstoreIndexCreator
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.vectorstores.faiss import FAISS
+
+import csv
 load_dotenv()
 #ASTRADB KEYS
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES
@@ -23,14 +32,17 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = .6
-OPEN_AI_TOP_P = .7
+OPEN_AI_TEMP = .7
+OPEN_AI_TOP_P = .8
 # OPEN_AI_TOP_K = .7
 
 
 CONTEXT_COUNT = 5
 #data for training and for retreival
+TEMP_CHAT_HISTORY =[]
 
+TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
+_BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
 def start_RAG():
     print("KEY CONFIG DONE")
 
@@ -52,26 +64,77 @@ def start_RAG():
     #besides from systemMessagePrompt/prompt engineering and hyperparameter tuning on nucleus sampling, we can fine tune the LLm and train it on a empathic dataset. I adjusted temp and top_p
 
     prompt_template = """
-    Answer the question using some, all, or none of the supplied context at your own discretion. Try to be empathetic as possible because you are talking to a human. 
-    If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with 'that is a difficult question' 
+    Answer the question based on your internal knowledge, and the Training Data and explain why you give this response. If you think your response is the best possible response please say 'certain'\
+    after your response. Take the initiative to provide help and resources to the user. If you are not confident with your response, please use the context and training data provided. \
+    You will be punished if the answer you give is not empathetic or optimal .\
+    Try to be empathetic as possible because you are talking to a young human. 
+    If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with a phrase similar to 'that is a difficult question' 
     and answer as best as possible. You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
     relevant advice, or resources to help the individual as much as possible. If you are aware of any resources please provide it for the human. \
     When communicating with the Human individual, see them as as subjects situated in a social \
     world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving. \
     If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
-    Be encouraging, act like you are the human's parent and that you genuinely love them.
+    Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!
     Context: {context}
+    Training Data: {train_data}
+
     Question: {question}
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P })
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P } )
 
-    #what we also need to do is fne tune and train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
 
+    #whatt we also need to do is fne tune, train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
     return [vstore,prompt_template,model]
 
+def _process_train_data(train_csv):
+    count = 2
+    outpath = "AI_Logic/empatheticdialogues/modified.csv"
+    with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file, open(fr"{outpath}", "w", encoding="utf-8", errors="replace") as outfile:
+        reader = csv.DictReader(file)
+        for (row, line) in zip(reader, file):
 
+            if (None not in row.keys()):
+                outfile.write(line)
+            else:
+                print("ignored")
+                print(row)
+def _test_data(train_csv)-> bool:
+    with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file:
+        reader = csv.DictReader(file)
+        for (i, row) in enumerate(reader):
+            #print(row)
+            if None in row.keys():
+                print("none in row")
+                print(row)
+                return False
+    return True
+
+
+        
+def train_model():
+
+    #prepare FAISS vectorstore embedding of EMPATHETIC DIALOGUES 
+    if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_CSV) and  _test_data(TRAIN_EMPATHETIC_DIALOGUES_CSV) == True:
+        #process_train_data(train_csv)
+        print("exists")
+
+        #EMPATHICDATA
+        empathic_data = CSVLoader(file_path=TRAIN_EMPATHETIC_DIALOGUES_CSV,encoding='utf-8',csv_args={
+        "delimiter": ",",
+        "fieldnames": ["conv_id", "utterance_idx", "context", "prompt", "speaker_idx", "utterance", "selfeval", "tags"]
+    })
+        loader = empathic_data.load()
+        training_embeddings = OpenAIEmbeddings()
+        #vectorindex = VectorstoreIndexCreator().from_loaders([loader])
+        trained_vector_store = FAISS.from_documents(loader, training_embeddings)
+        return trained_vector_store
+    else:
+        print("not exist")
+        raise  RuntimeError("CSV training data error")
+
+    
 def populate_db(vstore, dataset):
     philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
     print("An example entry:")
@@ -96,22 +159,71 @@ def populate_db(vstore, dataset):
     print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
 
-def get_response(vstore,prompt_template,model,message):
+
+
+def get_response(vstore,prompt_template,model,message, trained_vector_store : FAISS):
+
     print(vstore,prompt_template,model,CONTEXT_COUNT,message)
 
-    prompt = ChatPromptTemplate.from_template(prompt_template)
-
     context_retr = vstore.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
+    training_data = trained_vector_store.as_retriever(search_type="similarity")
+
+    qa_template = ChatPromptTemplate.from_template(prompt_template)
+    qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", prompt_template),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+    subchain_msg = """Given a chat history and the latest user question, \
+    which might reference context in the chat history or may necessitate the use of chat history to formulate the best answer, formulate a standalone question \
+    which can be understood without the chat history. If there is no chat history, disregard this message. Do NOT answer the question, \
+    just reformulate it if needed and otherwise return it as is."""
+
+    subchain_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", subchain_msg),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+    context_subchain = subchain_prompt | model | StrOutputParser()
+
+    def history_context_invoke(input: dict):
+        if input.get("chat_history"):
+            return context_subchain
+        else:
+            return input["question"]
+
+
+    # def history_context_invoke():
+    #     if len(TEMP_CHAT_HISTORY) != 0:
+    #         return context_subchain
+    #     else:
+    #         return "there is no chat history"
+    contexuals = {
+        "chat_history": history_context_invoke,
+         "context" :context_retr,
+         "train_data" : training_data
+        }
 
     chain = (
-        {"context": context_retr, "question": RunnablePassthrough()}
-        | prompt
+        {"question":RunnablePassthrough(), 
+         "context": itemgetter("context")(contexuals), 
+         "train_data": itemgetter("train_data")(contexuals) , 
+        }
+        | qa_template
         | model
-        | StrOutputParser()
+        |StrOutputParser()
     )
 
     #invoke with the history of chat messages from the human and the AI at URL: https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent
-    print("messages: ",message)
-    response = chain.invoke(message)
+    print("messages: ",TEMP_CHAT_HISTORY)
+    response = chain.invoke(
+        message
+    )
+    TEMP_CHAT_HISTORY.extend([HumanMessage(content=message), AIMessage(content=response) ])
+    print("chat history: ", TEMP_CHAT_HISTORY)
     return response
 
