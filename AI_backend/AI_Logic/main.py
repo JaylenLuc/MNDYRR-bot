@@ -87,7 +87,8 @@ def start_RAG() -> list:
     When communicating with the Human individual, see them as as subjects situated in a social \
     world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving. \
     If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
-    Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!
+    Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!\
+    please tell me what is the context provided and what training data is provided
     Context: {context}
     Training Data: {train_data}
     Question: {question}
@@ -146,7 +147,7 @@ def train_model() -> FAISS:
         print("not exist")
         raise  RuntimeError("CSV training data error")
 
-    
+@retry_with_exponential_backoff
 def populate_db(vstore : AstraDB, dataset) -> None:
     philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
     print("An example entry:")
@@ -209,6 +210,9 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
          "context" :context_retr,
          "train_data" : training_data, #here is where u can chain the training data
         }
+    # contexts = RunnableParallel(
+    #     {"context" : itemgetter("context")(contexuals), "train_data": itemgetter("train_data")(contexuals)}
+    # )
     chain = (
         qa_template
         | model
