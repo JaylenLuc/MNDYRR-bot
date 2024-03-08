@@ -6,9 +6,11 @@ import AI_Logic.main as AI
 AI_PACK = AI.start_RAG()
 #AI.populate_db(AI_PACK[0], None)
 TRAIN_VECTOR_STORE = AI.train_model()
-
+INVOCATION_CHAIN_DICT = AI.prepare_chain(*AI_PACK,TRAIN_VECTOR_STORE)
 
 def get_ai_response(req):
-    resp = AI.get_response(*AI_PACK,req.GET.get("question"),TRAIN_VECTOR_STORE)
+    #req.GET.get("question"),
+    INVOCATION_CHAIN_DICT["invoke_arg1"]["question"] = req.GET.get("question")
+    resp = AI.get_response(**INVOCATION_CHAIN_DICT)
     print(resp)
     return JsonResponse({"response":resp})

@@ -175,10 +175,9 @@ def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHi
         TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
     return TEMP_CHAT_HISTORY[(user_id, conversation_id)]
 
-@retry_with_exponential_backoff
-def get_response(vstore,prompt_template,model,message, trained_vector_store : FAISS):
+def prepare_chain(vstore,prompt_template,model, trained_vector_store : FAISS):
 
-    print(vstore,prompt_template,model,CONTEXT_COUNT,message)
+    #print(vstore,prompt_template,model,CONTEXT_COUNT,message)
 
     context_retr = vstore.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
     training_data = trained_vector_store.as_retriever(search_type="similarity")
@@ -210,13 +209,12 @@ def get_response(vstore,prompt_template,model,message, trained_vector_store : FA
          "context" :context_retr,
          "train_data" : training_data,
         }
-
     chain = (
         qa_template
         | model
         |StrOutputParser()
     )
-
+    
     chain_with_message_history = RunnableWithMessageHistory(
     chain,
     get_session_history,
@@ -242,12 +240,18 @@ def get_response(vstore,prompt_template,model,message, trained_vector_store : FA
         ]
     )
 
-    response = chain_with_message_history.invoke({"question": message,
-                                                  "context": itemgetter("context")(contexuals), 
-                                                  "train_data": itemgetter("train_data")(contexuals)},
-    config={"configurable": {"user_id": TEMP_USER_ID, "conversation_id": TEMP_CONV_ID}},)
-
+    
+    config={"configurable": {"user_id": TEMP_USER_ID, "conversation_id": TEMP_CONV_ID}}
+    all_contexts = {"question": None, "context": itemgetter("context")(contexuals), 
+                            "train_data": itemgetter("train_data")(contexuals)}
+    
     print("chat history: ", TEMP_CHAT_HISTORY)
 
-    return response
+    return {"chain": chain_with_message_history, 
+            "invoke_arg1": all_contexts,
+            "config": config}
 
+@retry_with_exponential_backoff
+def get_response(chain, invoke_arg1, config)-> str:
+    print("chat history: ", TEMP_CHAT_HISTORY)
+    return chain.invoke(invoke_arg1, config = config)
