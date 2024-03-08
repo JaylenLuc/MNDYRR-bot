@@ -7,6 +7,7 @@ import { shadows } from '@mui/system';
 import { borders } from '@mui/system';
 import axios from 'axios';
 export default function chat() {
+  //DEMO SECTION
   //add a disclaimer popup before use of the chat bot section
   //https:/www.dualdiagnosis.org.uk/chatbot-disclaimer/
 

@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from datasets import load_dataset
 from langchain_community.vectorstores.astradb import AstraDB
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -15,14 +18,19 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+#from langchain.schema.runnable import RunnablePassthrough
+
 from langchain_core import documents
 from langchain_core.documents import Document
 from langchain.indexes import VectorstoreIndexCreator
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.vectorstores.faiss import FAISS
 
+
 import csv
+
+from AI_Logic.exponential_backoff import retry_with_exponential_backoff
 load_dotenv()
 #ASTRADB KEYS
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES
@@ -39,14 +47,18 @@ OPEN_AI_TOP_P = .8
 
 CONTEXT_COUNT = 5
 #data for training and for retreival
-TEMP_CHAT_HISTORY =[]
+TEMP_CHAT_HISTORY = {}
+SESSION_ID = "TEST"
+
 
 TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
 _BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
+
+@retry_with_exponential_backoff
 def start_RAG():
     print("KEY CONFIG DONE")
 
-    embedding = OpenAIEmbeddings()
+    embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
     vstore = AstraDB(
         embedding=embedding,
         collection_name=os.environ["ASTRA_DB_COLLECTION"],
@@ -77,7 +89,6 @@ def start_RAG():
     Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!
     Context: {context}
     Training Data: {train_data}
-
     Question: {question}
     Your answer:
     """
@@ -112,7 +123,7 @@ def _test_data(train_csv)-> bool:
     return True
 
 
-        
+@retry_with_exponential_backoff
 def train_model():
 
     #prepare FAISS vectorstore embedding of EMPATHETIC DIALOGUES 
@@ -126,7 +137,7 @@ def train_model():
         "fieldnames": ["conv_id", "utterance_idx", "context", "prompt", "speaker_idx", "utterance", "selfeval", "tags"]
     })
         loader = empathic_data.load()
-        training_embeddings = OpenAIEmbeddings()
+        training_embeddings = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
         #vectorindex = VectorstoreIndexCreator().from_loaders([loader])
         trained_vector_store = FAISS.from_documents(loader, training_embeddings)
         return trained_vector_store
@@ -158,9 +169,12 @@ def populate_db(vstore, dataset):
 
     print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in TEMP_CHAT_HISTORY:
+        TEMP_CHAT_HISTORY[session_id] = ChatMessageHistory()
+    return TEMP_CHAT_HISTORY[session_id]
 
-
-
+@retry_with_exponential_backoff
 def get_response(vstore,prompt_template,model,message, trained_vector_store : FAISS):
 
     print(vstore,prompt_template,model,CONTEXT_COUNT,message)
@@ -168,62 +182,65 @@ def get_response(vstore,prompt_template,model,message, trained_vector_store : FA
     context_retr = vstore.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
     training_data = trained_vector_store.as_retriever(search_type="similarity")
 
-    qa_template = ChatPromptTemplate.from_template(prompt_template)
-    qa_prompt = ChatPromptTemplate.from_messages(
+    qa_template = ChatPromptTemplate.from_messages(
     [
         ("system", prompt_template),
-        MessagesPlaceholder(variable_name="chat_history"),
+        MessagesPlaceholder(variable_name="history"),
         ("human", "{question}"),
     ]
 )
-    subchain_msg = """Given a chat history and the latest user question, \
-    which might reference context in the chat history or may necessitate the use of chat history to formulate the best answer, formulate a standalone question \
-    which can be understood without the chat history. If there is no chat history, disregard this message. Do NOT answer the question, \
-    just reformulate it if needed and otherwise return it as is."""
+
+
+    subchain_msg = """Given a chat history and the latest user question \
+        which might reference context in the chat history, formulate a standalone question \
+        which can be understood without the chat history. Do NOT answer the question, \
+        just reformulate it if needed and otherwise return it as is."""
 
     subchain_prompt = ChatPromptTemplate.from_messages(
     [
         ("system", subchain_msg),
-        MessagesPlaceholder(variable_name="chat_history"),
+        MessagesPlaceholder(variable_name="history"),
         ("human", "{question}"),
     ]
 )
-    context_subchain = subchain_prompt | model | StrOutputParser()
+    context_subchain = (subchain_prompt | model | StrOutputParser())
 
-    def history_context_invoke(input: dict):
+    def history_context_invoke(input: str | dict):
+        print("input6:",input)
         if input.get("chat_history"):
-            return context_subchain
+            print("some in list")
+            #return subchain_msg
+            return itemgetter("context_subchain")(contexuals)
         else:
-            return input["question"]
-
-
-    # def history_context_invoke():
-    #     if len(TEMP_CHAT_HISTORY) != 0:
-    #         return context_subchain
-    #     else:
-    #         return "there is no chat history"
+            print("none in list")
+            return input #just the question
+        
     contexuals = {
-        "chat_history": history_context_invoke,
+        "context_subchain": context_subchain,
          "context" :context_retr,
-         "train_data" : training_data
+         "train_data" : training_data,
         }
 
     chain = (
-        {"question":RunnablePassthrough(), 
-         "context": itemgetter("context")(contexuals), 
-         "train_data": itemgetter("train_data")(contexuals) , 
-        }
+        history_context_invoke
         | qa_template
         | model
         |StrOutputParser()
     )
 
-    #invoke with the history of chat messages from the human and the AI at URL: https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent
-    print("messages: ",TEMP_CHAT_HISTORY)
-    response = chain.invoke(
-        message
+    chain_with_message_history = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="question",
+    history_messages_key="history",
     )
-    TEMP_CHAT_HISTORY.extend([HumanMessage(content=message), AIMessage(content=response) ])
+
+    response = chain_with_message_history.invoke({"question": message,
+                                                  "context": itemgetter("context")(contexuals), 
+                                                  "train_data": itemgetter("train_data")(contexuals)},
+    config={"configurable": {"session_id": SESSION_ID}},)
+
     print("chat history: ", TEMP_CHAT_HISTORY)
+
     return response
 

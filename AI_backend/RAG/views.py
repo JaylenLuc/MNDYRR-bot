@@ -4,7 +4,7 @@ import AI_Logic.main as AI
 # Create your views here.
 #this is to start the connection and build the AI 
 AI_PACK = AI.start_RAG()
-AI.populate_db(AI_PACK[0], None)
+#AI.populate_db(AI_PACK[0], None)
 TRAIN_VECTOR_STORE = AI.train_model()
 
 
