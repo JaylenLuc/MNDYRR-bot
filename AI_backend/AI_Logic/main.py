@@ -56,7 +56,7 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
 _BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
 
 @retry_with_exponential_backoff
-def start_RAG():
+def start_RAG() -> list:
     print("KEY CONFIG DONE")
 
     embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
@@ -125,7 +125,7 @@ def _test_data(train_csv)-> bool:
 
 
 @retry_with_exponential_backoff
-def train_model():
+def train_model() -> FAISS:
 
     #prepare FAISS vectorstore embedding of EMPATHETIC DIALOGUES 
     if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_CSV) and  _test_data(TRAIN_EMPATHETIC_DIALOGUES_CSV) == True:
@@ -147,7 +147,7 @@ def train_model():
         raise  RuntimeError("CSV training data error")
 
     
-def populate_db(vstore, dataset):
+def populate_db(vstore : AstraDB, dataset) -> None:
     philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
     print("An example entry:")
     print(philo_dataset[16])
@@ -175,7 +175,7 @@ def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHi
         TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
     return TEMP_CHAT_HISTORY[(user_id, conversation_id)]
 
-def prepare_chain(vstore,prompt_template,model, trained_vector_store : FAISS):
+def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, trained_vector_store : FAISS)-> dict:
 
     #print(vstore,prompt_template,model,CONTEXT_COUNT,message)
 
@@ -207,7 +207,7 @@ def prepare_chain(vstore,prompt_template,model, trained_vector_store : FAISS):
         
     contexuals = {
          "context" :context_retr,
-         "train_data" : training_data,
+         "train_data" : training_data, #here is where u can chain the training data
         }
     chain = (
         qa_template
@@ -252,6 +252,6 @@ def prepare_chain(vstore,prompt_template,model, trained_vector_store : FAISS):
             "config": config}
 
 @retry_with_exponential_backoff
-def get_response(chain, invoke_arg1, config)-> str:
+def get_response(chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     print("chat history: ", TEMP_CHAT_HISTORY)
     return chain.invoke(invoke_arg1, config = config)
