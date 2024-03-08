@@ -7,7 +7,7 @@ from langchain_community.vectorstores.astradb import AstraDB
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory, ConfigurableFieldSpec
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -48,7 +48,8 @@ OPEN_AI_TOP_P = .8
 CONTEXT_COUNT = 5
 #data for training and for retreival
 TEMP_CHAT_HISTORY = {}
-SESSION_ID = "TEST"
+TEMP_USER_ID = "TEST_USER"
+TEMP_CONV_ID = "1"
 
 
 TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
@@ -169,10 +170,10 @@ def populate_db(vstore, dataset):
 
     print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
-def get_session_history(session_id: str) -> BaseChatMessageHistory:
-    if session_id not in TEMP_CHAT_HISTORY:
-        TEMP_CHAT_HISTORY[session_id] = ChatMessageHistory()
-    return TEMP_CHAT_HISTORY[session_id]
+def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHistory:
+    if (user_id, conversation_id) not in TEMP_CHAT_HISTORY:
+        TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
+    return TEMP_CHAT_HISTORY[(user_id, conversation_id)]
 
 @retry_with_exponential_backoff
 def get_response(vstore,prompt_template,model,message, trained_vector_store : FAISS):
@@ -191,39 +192,27 @@ def get_response(vstore,prompt_template,model,message, trained_vector_store : FA
 )
 
 
-    subchain_msg = """Given a chat history and the latest user question \
-        which might reference context in the chat history, formulate a standalone question \
-        which can be understood without the chat history. Do NOT answer the question, \
-        just reformulate it if needed and otherwise return it as is."""
+#     subchain_msg = """Given a chat history and the latest user question \
+#         which might reference context in the chat history, formulate a standalone question \
+#         which can be understood without the chat history. Do NOT answer the question, \
+#         just reformulate it if needed and otherwise return it as is."""
 
-    subchain_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", subchain_msg),
-        MessagesPlaceholder(variable_name="history"),
-        ("human", "{question}"),
-    ]
-)
-    context_subchain = (subchain_prompt | model | StrOutputParser())
-
-    def history_context_invoke(input: str | dict):
-        print("input6:",input)
-        if input.get("chat_history"):
-            print("some in list")
-            #return subchain_msg
-            return itemgetter("context_subchain")(contexuals)
-        else:
-            print("none in list")
-            return input #just the question
+#     subchain_prompt = ChatPromptTemplate.from_messages(
+#     [
+#         ("system", subchain_msg),
+#         MessagesPlaceholder(variable_name="history"),
+#         ("human", "{question}"),
+#     ]
+# )
+#     context_subchain = (subchain_prompt | model | StrOutputParser())
         
     contexuals = {
-        "context_subchain": context_subchain,
          "context" :context_retr,
          "train_data" : training_data,
         }
 
     chain = (
-        history_context_invoke
-        | qa_template
+        qa_template
         | model
         |StrOutputParser()
     )
@@ -233,12 +222,30 @@ def get_response(vstore,prompt_template,model,message, trained_vector_store : FA
     get_session_history,
     input_messages_key="question",
     history_messages_key="history",
+        history_factory_config=[
+        ConfigurableFieldSpec(
+            id="user_id",
+            annotation=str,
+            name="User ID",
+            description="Unique identifier for the user.",
+            default="",
+            is_shared=True,
+        ),
+        ConfigurableFieldSpec(
+            id="conversation_id",
+            annotation=str,
+            name="Conversation ID",
+            description="Unique identifier for the conversation.",
+            default="",
+            is_shared=True,
+        ),
+        ]
     )
 
     response = chain_with_message_history.invoke({"question": message,
                                                   "context": itemgetter("context")(contexuals), 
                                                   "train_data": itemgetter("train_data")(contexuals)},
-    config={"configurable": {"session_id": SESSION_ID}},)
+    config={"configurable": {"user_id": TEMP_USER_ID, "conversation_id": TEMP_CONV_ID}},)
 
     print("chat history: ", TEMP_CHAT_HISTORY)
 
