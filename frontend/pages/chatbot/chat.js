@@ -13,8 +13,8 @@ function CookiesComponent ({giveCookieConsent}) {
 
         <form className = {styles.cookiesbox}>
             <p>
-                We use cookies to save your message history so that Mendy can remember your name!
-                Don't worry, you can opt in and its totally up to you, can still have a great experience
+                We use cookies and get your intial general location to save your message history and provide Mendy context to better understand you!
+                Don't worry, you can opt in and its totally up to you. You can still have a great experience
                 without it.
             </p>
             <Button size="medium" onClick = {() => giveCookieConsent(true)}>
@@ -39,8 +39,9 @@ export default function chat() {
       // getCookies();
       console.log("yes window")
       let value = window.localStorage.getItem("MENDY_SESSION") || "false"
-      console.log("val: ",value)
+      console.log("prev jwt: ", value)
       setCookie_data(value)
+      //set the location
       let JWT_options = {
         params : {
 
@@ -56,10 +57,15 @@ export default function chat() {
         let resp = res['data']['response']
         if (value == "false"){
           window.localStorage.setItem("MENDY_SESSION", resp)
-          console.log(window.localStorage.getItem("MENDY_SESSION"))
+          console.log("new token after req: ",window.localStorage.getItem("MENDY_SESSION"))
         }else{
-          window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
-          console.log(window.localStorage.getItem("MENDY_SESSION_CHAT_HIST"))
+          if (resp == "TRUE"){
+            window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
+            console.log(window.localStorage.getItem("MENDY_SESSION_CHAT_HIST"))
+          }else{
+            console.log("AUTH FAILED")
+          }
+          
         }
       })    
       .catch(err => { 
@@ -85,6 +91,7 @@ export default function chat() {
   const [cookies_consent , setCookie] = useState(undefined)
   const [cookies_data, setCookie_data] = useState([])
   const [cookies_msg_data, set_msg_data] = useState([])
+  const [geolocation, set_geolocation] = useState("")
 
   const [cookiepopup, setCookieComponent] = useState(<CookiesComponent giveCookieConsent={giveCookieConsent}/>)
 
@@ -95,12 +102,14 @@ export default function chat() {
       // getCookies();
       console.log("yes window")
       let value = window.localStorage.getItem("MENDY_SESSION") || "false"
-      console.log("val: ",value)
+      console.log("JWT TOKEN : ",value)
+      console.log("geolocation: ",geolocation)
       let JWT_options = {
         params : {
 
           JWT : value,
-          question : searchQuery
+          question : searchQuery,
+          geolocation : geolocation
         }
       }
       axios.get('http://127.0.0.1:8000/ai/query', JWT_options)
@@ -108,12 +117,13 @@ export default function chat() {
         //console.log(res['data']['response'])
         let resp = res['data']['response']
         if (value == "false"){
-          window.localStorage.setItem("MENDY_SESSION", resp)
+          
           console.log(window.localStorage.getItem("MENDY_SESSION"))
         }else{
           window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
           console.log(window.localStorage.getItem("MENDY_SESSION_CHAT_HIST"))
         }
+        _set_temp(resp)
       })    
       .catch(err => { 
         console.log(err) 
@@ -128,7 +138,17 @@ export default function chat() {
 
 
   function giveCookieConsent(consent) {
+    //set location if consent == true
+    if (consent == true){
 
+      navigator.geolocation.getCurrentPosition((position) => {
+        console.log(position.coords.latitude ," ", position.coords.longitude)
+        let location = JSON.stringify(position.coords.latitude) + "° N, " + JSON.stringify(position.coords.longitude) + "° W"
+        //encrypt it HMACSHA256 then baseURL encode
+        set_geolocation(location);
+      });
+     
+    }
     setCookie(consent)
     window.localStorage.setItem("MENDY_CONSENT", JSON.stringify(consent))
     console.log("cookie settings: ", cookies_consent)
@@ -197,9 +217,6 @@ export default function chat() {
         {
           _temp ? _temp : null
         }
-        cookies:
-        <br></br>   
-        {cookies_data ? cookies_data : "no session data"}
       </Box> 
 
       </main>

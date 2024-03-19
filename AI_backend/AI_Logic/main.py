@@ -1,5 +1,6 @@
 from json import tool
 import os
+import re
 from operator import itemgetter
 import django
 from dotenv import load_dotenv
@@ -31,6 +32,8 @@ from langchain_community.vectorstores.faiss import FAISS
 
 import csv
 
+import pydantic
+
 from AI_Logic.exponential_backoff import retry_with_exponential_backoff
 load_dotenv()
 #ASTRADB KEYS
@@ -40,7 +43,7 @@ ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT") #CHANGE IF DATAB
 OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
-
+ASTRA_DB_COLLECTION_ONE = os.environ.get("ASTRA_DB_COLLECTION_ONE")
 OPEN_AI_TEMP = .6
 OPEN_AI_TOP_P = .5
 # OPEN_AI_TOP_K = .7
@@ -70,7 +73,7 @@ def start_RAG() -> list:
     embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
     vstore = AstraDB(
         embedding=embedding,
-        collection_name=os.environ["ASTRA_DB_COLLECTION"],
+        collection_name=os.environ["ASTRA_DB_COLLECTION_ONE"],
         token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
         api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
     )
@@ -97,10 +100,13 @@ def start_RAG() -> list:
     If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
     Be encouraging, act like you are the human's parent and that you genuinely love them. But remember to also be logical coherent and logically sound. Feel free to use emojis when appropriate!\
     Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.
+    You are provided their location to help you get an idea of what kind of socio-economic environment they are in, use this at your own discretion, you will be punished if using their location
+     produces less empathetic responses.
     Context: {context}
     Training Data: {train_data}
     Question: {question}
-    Chat HistoryL {history}
+    Chat History :{history}
+    User's location : {geolocation}
     Your answer:
     """
 
@@ -163,6 +169,7 @@ def train_model() -> FAISS:
 
 @retry_with_exponential_backoff
 def populate_db(vstore : AstraDB, dataset) -> None:
+    #Abirate/english_quotes
     philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
     print("An example entry:")
     print(philo_dataset[16])
@@ -184,6 +191,50 @@ def populate_db(vstore : AstraDB, dataset) -> None:
     print(f"\nInserted {len(inserted_ids)} documents.")
 
     #print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
+
+@retry_with_exponential_backoff
+def populate_db_jstest(vstore : AstraDB) -> None:
+    #Abirate/english_quotes or jstet/quotes-500k
+    _dataset = load_dataset("jstet/quotes-500k")["train"]
+    print("An example entry:")
+    print(_dataset[16])
+
+    #POPULATE TEMP DATABSE WITH SOME DOCUEMNTS
+    docs = []
+
+    for entry in _dataset:
+        metadata = {} 
+        if entry["category"]:
+            # Add metadata tags to the metadata dictionary
+            for tag in entry["category"].split(","):
+                tag = re.sub(r"[^a-zA-Z]+", '_', tag.strip())
+                metadata[tag.strip()] = "y"
+        # Add a LangChain document with the quote and metadata tags
+        try:
+            doc = Document(page_content=entry["quote"], metadata=metadata)
+            docs.append(doc)
+        except pydantic.v1.error_wrappers.ValidationError as validationError:
+            print("val Error: ", validationError)
+            continue
+    print("done: ", len(docs))
+    while (len(docs) > 0):
+        if (len(docs) >= 1000):
+            insert_documents(docs[:1000],vstore)
+        else:
+            insert_documents(docs,vstore)
+
+            break
+
+        docs = docs[1000 : ]
+        print("elngth: ",len(docs))
+
+        
+@retry_with_exponential_backoff
+def insert_documents(docs : list, vstore :AstraDB) -> None:
+    inserted_ids = vstore.add_documents(docs)
+    print(f"\nInserted {len(inserted_ids)} documents.")
+
+
 
 def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHistory:
     #contact the MONGODB server
@@ -262,7 +313,8 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
     
     config={"configurable": {"user_id": TEMP_USER_ID, "conversation_id": TEMP_CONV_ID}}
     all_contexts = {"question": None, "context": itemgetter("context")(contexuals), 
-                            "train_data": itemgetter("train_data")(contexuals)}
+                            "train_data": itemgetter("train_data")(contexuals),
+                            "geolocation" : "not available"}
     
 
     return {"chain": chain_with_message_history, 

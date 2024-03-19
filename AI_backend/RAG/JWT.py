@@ -5,7 +5,7 @@ import hashlib
 import json
 import re
 def create_JWT() -> dict:
-
+    #geographic area
     return {
         'header' : {
             'alg' : 'HS246',

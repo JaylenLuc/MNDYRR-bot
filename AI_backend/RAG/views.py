@@ -15,7 +15,13 @@ JWT_SECRET_SALT = os.environ.get("JWT_SECRET_SALT")
 
 
 AI_PACK = AI.start_RAG()
-# #AI.populate_db(AI_PACK[0], None)
+
+#PERFORM ASTARDB WRITES ADHOC-----------------------------
+
+#AI.populate_db_jstest(AI_PACK[0]) #push this first
+#AI.populate_db(AI_PACK[0], None) #push this second
+
+#---------------------------------------------------------
 TRAIN_VECTOR_STORE = AI.train_model()
 INVOCATION_CHAIN_DICT = AI.prepare_chain(*AI_PACK,TRAIN_VECTOR_STORE)
 
@@ -23,15 +29,21 @@ def get_ai_response(req):
     #req.GET.get("question"),
     print(req.method)
     req_body = req.GET.get("JWT")
+    geolocator = req.GET.get("geolocation")
     if req.method == 'GET':
         if(req_body != "false" and JWT.authJWTSignature(req_body,JWT_SECRET_SALT) == True):
             print("You're logged in via cookies.")
 
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = JWT.extract_session_id(req_body)
+
+            if (geolocator != ""):
+                print("geolocator: ",geolocator)
+                INVOCATION_CHAIN_DICT["invoke_arg1"]["geolocation"] = geolocator
         else:
             print("cookies not enabled")
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = False
             #return HttpResponse("Please enable your cookies")
+            #if it fails you will not get the history populated
 
 
     
