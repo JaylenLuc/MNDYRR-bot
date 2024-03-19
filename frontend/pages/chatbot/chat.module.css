@@ -5,12 +5,30 @@
     width: 60%;
     height:85vh;
     margin: auto;
+    z-index: -1;
+
 }
 
 .searchbar{
     width: 100%;
     position: relative;
     bottom: 0; 
+    z-index: inherit;
 
+
+}
+
+.cookiesbox{
+    width: 30%;
+    position: absolute;
+    left: 40%;
+    top: 20%;
+    margin : auto;
+    padding: 20px;
+    box-shadow: 5px 10px black;
+    border-radius: 25px;
+    height:42vh;
+    background-color: paleturquoise;
+    z-index:1;
 
 }

@@ -20,5 +20,6 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('query/', views.get_ai_response)
+    path('query/', views.get_ai_response),
+    path('setcookies/', views.set_cookies)
 ]

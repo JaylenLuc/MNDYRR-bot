@@ -5,8 +5,8 @@ import { useState } from "react";
 const SearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDisabled}) => (
 
     
-    <form>
-      <TextField
+    <form style={{zIndex : 0}}>
+      <TextField style={{zIndex : "inherit"}}
         id="search-bar"
         className={styles.searchbar}
         onInput={(e) => {

@@ -1,6 +1,7 @@
 from json import tool
 import os
 from operator import itemgetter
+import django
 from dotenv import load_dotenv
 from datasets import load_dataset
 from langchain_community.vectorstores.astradb import AstraDB
@@ -40,8 +41,8 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 
-OPEN_AI_TEMP = .7
-OPEN_AI_TOP_P = .8
+OPEN_AI_TEMP = .6
+OPEN_AI_TOP_P = .5
 # OPEN_AI_TOP_K = .7
 
 
@@ -53,10 +54,17 @@ TEMP_CONV_ID = "1"
 
 
 TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
+TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_logic/empatheticdialogues"
+EMPATHIC_DATA_FAISS = r"AI_logic/empatheticdialogues/empathic_faiss"
 _BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
 
 @retry_with_exponential_backoff
 def start_RAG() -> list:
+
+    #TEMP TEST ON JSON SERIALIZATION-----------------------------------------------------
+
+
+    #------------------------------------------------------------------------------------
     print("KEY CONFIG DONE")
 
     embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
@@ -77,21 +85,22 @@ def start_RAG() -> list:
     #besides from systemMessagePrompt/prompt engineering and hyperparameter tuning on nucleus sampling, we can fine tune the LLm and train it on a empathic dataset. I adjusted temp and top_p
 
     prompt_template = """
-    Answer the question based on your internal knowledge, and the Training Data and explain why you give this response. If you think your response is the best possible response please say 'certain'\
+    Answer the question based on your internal knowledge, Chat history, and the Training Data. Explain why you give this response. If you think your response is the best possible response please say 'certain'\
     after your response. Take the initiative to provide help and resources to the user. If you are not confident with your response, please use the context and training data provided. \
     You will be punished if the answer you give is not empathetic or optimal .\
-    Try to be empathetic as possible because you are talking to a young human. 
+    Try to be empathetic as possible because you are talking to a young human. Give them tanigble advice and coping mechanism and explain why. 
     If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with a phrase similar to 'that is a difficult question' 
     and answer as best as possible. You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
     relevant advice, or resources to help the individual as much as possible. If you are aware of any resources please provide it for the human. \
     When communicating with the Human individual, see them as as subjects situated in a social \
     world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving. \
     If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
-    Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!\
-    please tell me what is the context provided and what training data is provided
+    Be encouraging, act like you are the human's parent and that you genuinely love them. But remember to also be logical coherent and logically sound. Feel free to use emojis when appropriate!\
+    Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.
     Context: {context}
     Training Data: {train_data}
     Question: {question}
+    Chat HistoryL {history}
     Your answer:
     """
 
@@ -129,22 +138,27 @@ def _test_data(train_csv)-> bool:
 def train_model() -> FAISS:
 
     #prepare FAISS vectorstore embedding of EMPATHETIC DIALOGUES 
-    if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_CSV) and  _test_data(TRAIN_EMPATHETIC_DIALOGUES_CSV) == True:
+    if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_DIR) and  _test_data(TRAIN_EMPATHETIC_DIALOGUES_CSV) == True:
         #process_train_data(train_csv)
-        print("exists")
-
-        #EMPATHICDATA
-        empathic_data = CSVLoader(file_path=TRAIN_EMPATHETIC_DIALOGUES_CSV,encoding='utf-8',csv_args={
-        "delimiter": ",",
-        "fieldnames": ["conv_id", "utterance_idx", "context", "prompt", "speaker_idx", "utterance", "selfeval", "tags"]
-    })
-        loader = empathic_data.load()
+        print("TRAINING")
         training_embeddings = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
-        #vectorindex = VectorstoreIndexCreator().from_loaders([loader])
-        trained_vector_store = FAISS.from_documents(loader, training_embeddings)
+        trained_vector_store = ""
+        if os.path.exists(EMPATHIC_DATA_FAISS):
+            trained_vector_store = FAISS.load_local(EMPATHIC_DATA_FAISS, training_embeddings)
+        #EMPATHICDATA
+        else:
+            empathic_data = CSVLoader(file_path=TRAIN_EMPATHETIC_DIALOGUES_CSV,encoding='utf-8',csv_args={
+                "delimiter": ",",
+                "fieldnames": ["conv_id", "utterance_idx", "context", "prompt", "speaker_idx", "utterance", "selfeval", "tags"]
+                }
+            )
+            loader = empathic_data.load()
+            trained_vector_store = FAISS.from_documents(loader, training_embeddings)
+            trained_vector_store.save_local(EMPATHIC_DATA_FAISS)
+
         return trained_vector_store
     else:
-        print("not exist")
+        #print("not exist")
         raise  RuntimeError("CSV training data error")
 
 @retry_with_exponential_backoff
@@ -169,9 +183,10 @@ def populate_db(vstore : AstraDB, dataset) -> None:
     inserted_ids = vstore.add_documents(docs)
     print(f"\nInserted {len(inserted_ids)} documents.")
 
-    print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
+    #print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).count_documents())
 
 def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHistory:
+    #contact the MONGODB server
     if (user_id, conversation_id) not in TEMP_CHAT_HISTORY:
         TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
     return TEMP_CHAT_HISTORY[(user_id, conversation_id)]
@@ -249,7 +264,6 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
     all_contexts = {"question": None, "context": itemgetter("context")(contexuals), 
                             "train_data": itemgetter("train_data")(contexuals)}
     
-    print("chat history: ", TEMP_CHAT_HISTORY)
 
     return {"chain": chain_with_message_history, 
             "invoke_arg1": all_contexts,
@@ -258,4 +272,13 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
 @retry_with_exponential_backoff
 def get_response(chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     print("chat history: ", TEMP_CHAT_HISTORY)
+    #take the last two entries and send it to langfuse
+    
+
     return chain.invoke(invoke_arg1, config = config)
+
+#def populate_chat_histoty
+
+#def get last two utterances and send it to langfuse()
+
+#def clear langfuse

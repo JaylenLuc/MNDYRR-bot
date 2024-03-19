@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=4ezl**ajwi4#-xhcbvalw)947#njdp4f=7l-jbrt*1mn=8dnd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
 
 # CORS_ORIGIN_WHITELIST = (
 
@@ -36,17 +36,19 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'RAG',
     'AI_Logic',
     'rest_framework',
     'corsheaders',
+    
 ]
 
 MIDDLEWARE = [
