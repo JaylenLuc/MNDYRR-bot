@@ -18,7 +18,7 @@ AI_PACK = AI.start_RAG()
 
 #PERFORM ASTARDB WRITES ADHOC-----------------------------
 
-#AI.populate_db_jstest(AI_PACK[0]) #push this first
+AI.populate_db_jstest(AI_PACK[0]) #push this first
 #AI.populate_db(AI_PACK[0], None) #push this second
 
 #---------------------------------------------------------
@@ -37,6 +37,7 @@ def get_ai_response(req):
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = JWT.extract_session_id(req_body)
 
             if (geolocator != ""):
+                #decode base64 and decode HMACSHA256
                 print("geolocator: ",geolocator)
                 INVOCATION_CHAIN_DICT["invoke_arg1"]["geolocation"] = geolocator
         else:

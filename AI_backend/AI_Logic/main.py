@@ -217,6 +217,8 @@ def populate_db_jstest(vstore : AstraDB) -> None:
             print("val Error: ", validationError)
             continue
     print("done: ", len(docs))
+    start_len = len(docs) - 447708
+    docs = docs[start_len : ]
     while (len(docs) > 0):
         if (len(docs) >= 1000):
             insert_documents(docs[:1000],vstore)
@@ -228,7 +230,7 @@ def populate_db_jstest(vstore : AstraDB) -> None:
         docs = docs[1000 : ]
         print("elngth: ",len(docs))
 
-        
+
 @retry_with_exponential_backoff
 def insert_documents(docs : list, vstore :AstraDB) -> None:
     inserted_ids = vstore.add_documents(docs)
