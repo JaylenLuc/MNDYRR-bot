@@ -269,7 +269,7 @@ def add_session_history(user_id: str, conversation_id: str, usr_msg : str, ai_ms
         # history.add_user_message("hi!")
         # history.add_ai_message("whats up?")
     TEMP_CHAT_HISTORY[(user_id, conversation_id)].add_user_message(usr_msg)
-    TEMP_CHAT_HISTORY[(user_id, conversation_id)].add_user_message(ai_msg)
+    TEMP_CHAT_HISTORY[(user_id, conversation_id)].add_ai_message(ai_msg)
 
 
 def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, trained_vector_store : FAISS)-> dict:
