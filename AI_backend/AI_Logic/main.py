@@ -68,7 +68,7 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
 TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_logic/empatheticdialogues"
 EMPATHIC_DATA_FAISS = r"AI_logic/empatheticdialogues/empathic_faiss"
 _BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
-FIREBASE_JSON = r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-8ed8eb8892.json"
+FIREBASE_JSON = r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
 REFERENCE = None
 
 def start_firebase():
