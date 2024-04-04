@@ -15,16 +15,16 @@ JWT_SECRET_SALT = os.environ.get("JWT_SECRET_SALT")
 
 
 AI_PACK = AI.start_RAG()
+FIREBASE_ACTIVE = AI.start_firebase()
 
 #PERFORM ASTARDB WRITES ADHOC-----------------------------
 
-AI.populate_db_jstest(AI_PACK[0]) #push this first
+#AI.populate_db_jstest(AI_PACK[0]) #push this first
 #AI.populate_db(AI_PACK[0], None) #push this second
 
 #---------------------------------------------------------
 TRAIN_VECTOR_STORE = AI.train_model()
 INVOCATION_CHAIN_DICT = AI.prepare_chain(*AI_PACK,TRAIN_VECTOR_STORE)
-
 def get_ai_response(req):
     #req.GET.get("question"),
     print(req.method)
@@ -35,7 +35,7 @@ def get_ai_response(req):
             print("You're logged in via cookies.")
 
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = JWT.extract_session_id(req_body)
-
+            print(FIREBASE_ACTIVE)
             if (geolocator != ""):
                 #decode base64 and decode HMACSHA256
                 print("geolocator: ",geolocator)

@@ -1,4 +1,6 @@
 from json import tool
+from datetime import datetime
+import math
 import os
 import re
 from operator import itemgetter
@@ -28,7 +30,9 @@ from langchain_core.documents import Document
 from langchain.indexes import VectorstoreIndexCreator
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.vectorstores.faiss import FAISS
-
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
 import csv
 
@@ -44,6 +48,10 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 ASTRA_DB_COLLECTION_ONE = os.environ.get("ASTRA_DB_COLLECTION_ONE")
+
+# LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
+# LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
+# LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
 OPEN_AI_TEMP = .6
 OPEN_AI_TOP_P = .5
 # OPEN_AI_TOP_K = .7
@@ -60,6 +68,17 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
 TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_logic/empatheticdialogues"
 EMPATHIC_DATA_FAISS = r"AI_logic/empatheticdialogues/empathic_faiss"
 _BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
+FIREBASE_JSON = r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-8ed8eb8892.json"
+REFERENCE = None
+
+def start_firebase():
+    try:
+        cred = credentials.Certificate(FIREBASE_JSON)
+        firebase_admin.initialize_app(cred, {"databaseURL" : "https://mndyrr-28244-default-rtdb.firebaseio.com/"})
+
+        return True
+    except:
+        return False
 
 @retry_with_exponential_backoff
 def start_RAG() -> list:
@@ -106,7 +125,6 @@ def start_RAG() -> list:
     Training Data: {train_data}
     Question: {question}
     Chat History :{history}
-    User's location : {geolocation}
     Your answer:
     """
 
@@ -244,6 +262,16 @@ def get_session_history(user_id: str, conversation_id: str) -> BaseChatMessageHi
         TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
     return TEMP_CHAT_HISTORY[(user_id, conversation_id)]
 
+def add_session_history(user_id: str, conversation_id: str, usr_msg : str, ai_msg :str):
+    if (user_id, conversation_id) not in TEMP_CHAT_HISTORY:
+        TEMP_CHAT_HISTORY[(user_id, conversation_id)] = ChatMessageHistory()
+
+        # history.add_user_message("hi!")
+        # history.add_ai_message("whats up?")
+    TEMP_CHAT_HISTORY[(user_id, conversation_id)].add_user_message(usr_msg)
+    TEMP_CHAT_HISTORY[(user_id, conversation_id)].add_user_message(ai_msg)
+
+
 def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, trained_vector_store : FAISS)-> dict:
 
     #print(vstore,prompt_template,model,CONTEXT_COUNT,message)
@@ -315,8 +343,7 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
     
     config={"configurable": {"user_id": TEMP_USER_ID, "conversation_id": TEMP_CONV_ID}}
     all_contexts = {"question": None, "context": itemgetter("context")(contexuals), 
-                            "train_data": itemgetter("train_data")(contexuals),
-                            "geolocation" : "not available"}
+                            "train_data": itemgetter("train_data")(contexuals)}
     
 
     return {"chain": chain_with_message_history, 
@@ -324,15 +351,47 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
             "config": config}
 
 @retry_with_exponential_backoff
-def get_response(chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
+def get_response( chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
+    populate_chat_history(config["configurable"]["user_id"])
+    ai_resp = chain.invoke(invoke_arg1, config = config)
+    push_chat_to_DB(invoke_arg1["question"], ai_resp)
+    print()
     print("chat history: ", TEMP_CHAT_HISTORY)
-    #take the last two entries and send it to langfuse
+    print("databse match :", REFERENCE.get() )
+    return ai_resp
+
+def populate_chat_history(session_id : str):
+    
+    if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
+        global REFERENCE
+        REFERENCE = db.reference(f"/{session_id}/chat_history")
+    
+        chat_history = REFERENCE.get()
+        if chat_history != None:
+            for time, utterances in chat_history.items():
+                add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
+
+
+        # {'1712196777': {'AIMessage': "I'm really sorry to hear that you're going through this, Jin.", 'HumanMessage': 'I am Jin, I am 23 years old, and I struggle'}, 
+        #  '1712196795': {'AIMessage': 'Your name is Jin. If you have any other questions or need further assistance, feel free to ask! 🌟', 'HumanMessage': 'whats my name'}
+        # }
+
     
 
-    return chain.invoke(invoke_arg1, config = config)
+#def get last two utterances and send it to firebase()
+def push_chat_to_DB( query :str, resp : str):
+    currentDateAndTime = datetime.now()
 
-#def populate_chat_histoty
-
-#def get last two utterances and send it to langfuse()
-
+    currentTime = "-".join((str(i) for i in (currentDateAndTime.year, currentDateAndTime.month, currentDateAndTime.day,currentDateAndTime.hour,currentDateAndTime.minute,currentDateAndTime.second)))
+    REFERENCE.update({currentTime : {"AIMessage" : resp , "HumanMessage" : query}})
+    #print("after push: ",REFERENCE.get())
+    ''' 
+    {currentDateAndTime.second
+        session_id : "chat_history" : {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        ...
+    
+    }
+    '''
 #def clear langfuse

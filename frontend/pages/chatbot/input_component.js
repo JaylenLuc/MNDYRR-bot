@@ -18,7 +18,7 @@ const SearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDi
         placeholder="Ask questions!"
         size="medium"
       />
-      <Button variant="contained" disabled={btnDisabled} onClick={() => handleClick()}>Ask</Button> 
+      <Button onTap variant="contained" disabled={btnDisabled} onClick={() => handleClick()}>Ask</Button> 
       
     </form>
 );

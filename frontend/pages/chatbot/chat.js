@@ -7,6 +7,7 @@ import SearchBar from "./input_component"
 import axios from 'axios';
 import { Cookies, CookiesProvider, useCookies } from 'react-cookie'
 import { useEffect } from 'react';
+import {HmacSHA256, enc} from 'crypto-js'
 
 function CookiesComponent ({giveCookieConsent}) {
     return (
@@ -141,12 +142,17 @@ export default function chat() {
     //set location if consent == true
     if (consent == true){
 
-      navigator.geolocation.getCurrentPosition((position) => {
-        console.log(position.coords.latitude ," ", position.coords.longitude)
-        let location = JSON.stringify(position.coords.latitude) + "° N, " + JSON.stringify(position.coords.longitude) + "° W"
-        //encrypt it HMACSHA256 then baseURL encode
-        set_geolocation(location);
-      });
+      // navigator.geolocation.getCurrentPosition((position) => {
+      //   console.log(position.coords.latitude ," ", position.coords.longitude)
+      //   let location = JSON.stringify(position.coords.latitude) + "° N, " + JSON.stringify(position.coords.longitude) + "° W"
+      //   //encrypt it HMACSHA256 then baseURL encode
+      //   console.log(location)
+      //   console.log("geosalt: ", process.env.GEO_SALT)
+      //   let hmac = HmacSHA256(location, process.env.GEO_SALT);
+      //   let encoded_location = hmac.toString(enc.Base64)
+      //   //CryptoJS.HmacSHA256()
+      //   set_geolocation(encoded_location);
+      // });
      
     }
     setCookie(consent)
