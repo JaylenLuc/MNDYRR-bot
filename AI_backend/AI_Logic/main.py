@@ -48,7 +48,7 @@ OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
 ASTRA_DB_COLLECTION_ONE = os.environ.get("ASTRA_DB_COLLECTION_ONE")
-
+FIREBASE_URL = os.environ.get("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
@@ -74,7 +74,7 @@ REFERENCE = None
 def start_firebase():
     try:
         cred = credentials.Certificate(FIREBASE_JSON)
-        firebase_admin.initialize_app(cred, {"databaseURL" : "https://mndyrr-28244-default-rtdb.firebaseio.com/"})
+        firebase_admin.initialize_app(cred, {"databaseURL" : FIREBASE_URL})
 
         return True
     except:
