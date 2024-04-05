@@ -107,8 +107,9 @@ def start_RAG() -> list:
     #besides from systemMessagePrompt/prompt engineering and hyperparameter tuning on nucleus sampling, we can fine tune the LLm and train it on a empathic dataset. I adjusted temp and top_p
 
     prompt_template = """
-    Answer the question based on your internal knowledge, Chat history, and the Training Data. Explain why you give this response. If you think your response is the best possible response please say 'certain'\
-    after your response. Take the initiative to provide help and resources to the user. If you are not confident with your response, please use the context and training data provided. \
+    Answer the question based on your internal knowledge, Chat history, and the Training Data. Do not list out your responses unless prompted or applicable. \
+    Explain why you give this response. If you think your response is the best possible response please say 'certain'\
+    after your response. Provide help and resources to the user whenever possible. If you are not confident with your response, please use the context and training data provided. \
     You will be punished if the answer you give is not empathetic or optimal .\
     Try to be empathetic as possible because you are talking to a young human. Give them tanigble advice and coping mechanism and explain why. 
     If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with a phrase similar to 'that is a difficult question' 
@@ -119,12 +120,9 @@ def start_RAG() -> list:
     If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
     Be encouraging, act like you are the human's parent and that you genuinely love them. But remember to also be logical coherent and logically sound. Feel free to use emojis when appropriate!\
     Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.
-    You are provided their location to help you get an idea of what kind of socio-economic environment they are in, use this at your own discretion, you will be punished if using their location
-     produces less empathetic responses.
     Context: {context}
     Training Data: {train_data}
     Question: {question}
-    Chat History :{history}
     Your answer:
     """
 
@@ -306,6 +304,7 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
          "context" :context_retr,
          "train_data" : training_data, #here is where u can chain the training data
         }
+    print("context: ", context_retr)
     # contexts = RunnableParallel(
     #     {"context" : itemgetter("context")(contexuals), "train_data": itemgetter("train_data")(contexuals)}
     # )
@@ -351,13 +350,13 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
             "config": config}
 
 @retry_with_exponential_backoff
-def get_response( chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
-    populate_chat_history(config["configurable"]["user_id"])
+def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
+    if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
     ai_resp = chain.invoke(invoke_arg1, config = config)
-    push_chat_to_DB(invoke_arg1["question"], ai_resp)
-    print()
+    if enabled_cookies : push_chat_to_DB(invoke_arg1["question"], ai_resp)
+    # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
-    print("databse match :", REFERENCE.get() )
+    # print("databse match :", REFERENCE.get() )
     return ai_resp
 
 def populate_chat_history(session_id : str):

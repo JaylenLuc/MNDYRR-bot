@@ -25,6 +25,7 @@ FIREBASE_ACTIVE = AI.start_firebase()
 #---------------------------------------------------------
 TRAIN_VECTOR_STORE = AI.train_model()
 INVOCATION_CHAIN_DICT = AI.prepare_chain(*AI_PACK,TRAIN_VECTOR_STORE)
+ENABLED_COOKIES = False
 def get_ai_response(req):
     #req.GET.get("question"),
     print(req.method)
@@ -33,7 +34,7 @@ def get_ai_response(req):
     if req.method == 'GET':
         if(req_body != "false" and JWT.authJWTSignature(req_body,JWT_SECRET_SALT) == True):
             print("You're logged in via cookies.")
-
+            ENABLED_COOKIES = True
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = JWT.extract_session_id(req_body)
             print(FIREBASE_ACTIVE)
             if (geolocator != ""):
@@ -51,7 +52,7 @@ def get_ai_response(req):
     #-----SERVER RESPONSE--------------------------------------
     INVOCATION_CHAIN_DICT["invoke_arg1"]["question"] = req.GET.get("question")
     print(req)
-    resp = AI.get_response(**INVOCATION_CHAIN_DICT)
+    resp = AI.get_response(ENABLED_COOKIES,**INVOCATION_CHAIN_DICT)
     print(resp)
     return JsonResponse({"response":resp})
 
