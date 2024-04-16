@@ -3,7 +3,7 @@ import Head from 'next/head';
 import styles from './chat.module.css';
 import {Box,Button} from '@mui/material';
 import { useState } from "react";
-import SearchBar from "./input_component"
+import SearchBar from "../../components/input_component"
 import axios from 'axios';
 import { Cookies, CookiesProvider, useCookies } from 'react-cookie'
 import { useEffect } from 'react';

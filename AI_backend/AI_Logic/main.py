@@ -67,10 +67,10 @@ TEMP_CONV_ID = "1"
 TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
 TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_logic/empatheticdialogues"
 EMPATHIC_DATA_FAISS = r"AI_logic/empatheticdialogues/empathic_faiss"
-_BAD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
+MOD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
 FIREBASE_JSON = r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
 REFERENCE = None
-
+VALID_PATH = r"AI_logic/empatheticdialogues/valid.csv"
 def start_firebase():
     try:
         cred = credentials.Certificate(FIREBASE_JSON)
@@ -126,7 +126,7 @@ def start_RAG() -> list:
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P } )
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P } ) #model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
 
 
     #whatt we also need to do is fne tune, train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
@@ -134,16 +134,14 @@ def start_RAG() -> list:
 
 def _process_train_data(train_csv):
     count = 2
-    outpath = "AI_Logic/empatheticdialogues/modified.csv"
+    outpath = r"AI_Logic/empatheticdialogues/modified.csv"
     with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file, open(fr"{outpath}", "w", encoding="utf-8", errors="replace") as outfile:
         reader = csv.DictReader(file)
         for (row, line) in zip(reader, file):
 
             if (None not in row.keys()):
                 outfile.write(line)
-            else:
-                print("ignored")
-                print(row)
+
 def _test_data(train_csv)-> bool:
     with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file:
         reader = csv.DictReader(file)
@@ -158,9 +156,9 @@ def _test_data(train_csv)-> bool:
 
 @retry_with_exponential_backoff
 def train_model() -> FAISS:
-
+    if not os.path.exists(EMPATHIC_DATA_FAISS) : _process_train_data(VALID_PATH)
     #prepare FAISS vectorstore embedding of EMPATHETIC DIALOGUES 
-    if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_DIR) and  _test_data(TRAIN_EMPATHETIC_DIALOGUES_CSV) == True:
+    if os.path.exists(TRAIN_EMPATHETIC_DIALOGUES_DIR):
         #process_train_data(train_csv)
         print("TRAINING")
         training_embeddings = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
@@ -169,6 +167,8 @@ def train_model() -> FAISS:
             trained_vector_store = FAISS.load_local(EMPATHIC_DATA_FAISS, training_embeddings)
         #EMPATHICDATA
         else:
+            
+
             empathic_data = CSVLoader(file_path=TRAIN_EMPATHETIC_DIALOGUES_CSV,encoding='utf-8',csv_args={
                 "delimiter": ",",
                 "fieldnames": ["conv_id", "utterance_idx", "context", "prompt", "speaker_idx", "utterance", "selfeval", "tags"]
@@ -386,9 +386,9 @@ def push_chat_to_DB( query :str, resp : str):
     #print("after push: ",REFERENCE.get())
     ''' 
     {currentDateAndTime.second
-        session_id : "chat_history" : {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
-        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
-        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, EPOCH_TIME : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        session_id : "chat_history" : {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, ...},
+        session_id : "chat_history" :  {Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, Y-M-D-H-M-S : {"AIMessage": "str", "HumanMessage": "question"}, ...},
         ...
     
     }
