@@ -4,6 +4,7 @@ import math
 import os
 import re
 from operator import itemgetter
+from dateutil.parser import parse
 import django
 from dotenv import load_dotenv
 from datasets import load_dataset
@@ -52,8 +53,8 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
-OPEN_AI_TEMP = .6
-OPEN_AI_TOP_P = .5
+OPEN_AI_TEMP = .7
+OPEN_AI_TOP_P = .8
 # OPEN_AI_TOP_K = .7
 
 
@@ -353,11 +354,13 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
 def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
     ai_resp = chain.invoke(invoke_arg1, config = config)
-    if enabled_cookies : push_chat_to_DB(invoke_arg1["question"], ai_resp)
+    resp = None
+    if enabled_cookies : 
+        resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
     # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
     # print("databse match :", REFERENCE.get() )
-    return ai_resp
+    return resp #[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
 
 def populate_chat_history(session_id : str) -> dict:
 
@@ -370,9 +373,21 @@ def populate_chat_history(session_id : str) -> dict:
         if chat_history != None:
             for time, utterances in chat_history.items():
                 add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
+                #datetime(year, month, day, hour=0, minute=0, second=0,
                 res_chat_history[time] = {"HumanMessage": utterances['HumanMessage'], "AIMessage" : utterances['AIMessage']}
-
-            return res_chat_history
+                #Y-M-D-H-M-S
+            
+            res_chat_history = dict(sorted(res_chat_history.items(),reverse=True,key=lambda x: ( int(x[0].split('-')[0]), 
+                                                                                    int(x[0].split('-')[1]),
+                                                                                    int(x[0].split('-')[2]), 
+                                                                                    int(x[0].split('-')[3]), 
+                                                                                    int(x[0].split('-')[4])) 
+                                                                                ))
+            for k,v in res_chat_history.items():
+                #k = '-'.join((str(k.year),str(k.month),str(k.day),str(k.hour),str(k.minute),str(k.second)))
+                print(k)
+            #print(res_chat_history)
+            return res_chat_history 
 
 
         # {'1712196777': {'AIMessage': "I'm really sorry to hear that you're going through this, Jin.", 'HumanMessage': 'I am Jin, I am 23 years old, and I struggle'}, 
@@ -397,4 +412,5 @@ def push_chat_to_DB( query :str, resp : str):
     
     }
     '''
+    return [currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
 #def clear langfuse

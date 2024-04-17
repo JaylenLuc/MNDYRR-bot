@@ -8,6 +8,8 @@
     z-index: -1;
     background-image: linear-gradient(#A7C7E7, #F8C8DC);
     overflow: scroll;
+    display: flex;
+    flex-direction: column-reverse;
 
 }
 .aiChat{
@@ -16,7 +18,6 @@
     border-radius: 25px;
     width: 70%;
     height:auto;
-
     background-color: #FAC898;
 
 

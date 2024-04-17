@@ -141,13 +141,15 @@ export default function chat() {
       axios.get('http://127.0.0.1:8000/ai/query', JWT_options)
       .then(res => {
         //console.log(res['data']['response'])
-        let resp = res['data']['response']
+        let resp = res['data']['response'] //[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
         if (value == "false"){
           
           console.log(window.localStorage.getItem("MENDY_SESSION"))
         }else{
           //window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
           console.log("YES!")
+          init_chat_hist[resp[0]] = {"AIMessage" : resp[1]["AIMessage"] , "HumanMessage" : resp[1]["HumanMessage"] }
+          set_init_chat_hist(init_chat_hist)
         }
         _set_temp(resp)
       })    
