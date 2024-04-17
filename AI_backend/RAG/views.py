@@ -71,8 +71,11 @@ def set_cookies(req):
         print("auth: ", auth)
         if (auth == True):
             #populate chat history store with a function that access the TEMP_STORE
+            jwt_token = JWT.extract_session_id(req_body)
+            chat_history = AI.populate_chat_history(jwt_token)
+            print("on cookie load: ", jwt_token)
 
-            return JsonResponse({"response":"TRUE"})
+            return JsonResponse({"response": chat_history})
         else:
             return JsonResponse({"response":"FAILED"})
         

@@ -2,13 +2,13 @@ import TextField from "@mui/material/TextField";
 import styles from './components.module.css'
 import Button from '@mui/material/Button';
 import { useState } from "react";
-const SearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDisabled}) => (
+const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDisabled}) => (
 
     
     <form style={{zIndex : 0}}>
       <TextField style={{zIndex : "inherit"}}
         id="search-bar"
-        className={styles.searchbar}
+        className={styles.querybar}
         onInput={(e) => {
           setSearchQuery(e.target.value);
         }}
@@ -23,4 +23,4 @@ const SearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDi
     </form>
 );
 
-export default SearchBar
+export default RealSearchBar;

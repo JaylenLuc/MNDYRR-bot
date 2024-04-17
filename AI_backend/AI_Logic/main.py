@@ -126,7 +126,7 @@ def start_RAG() -> list:
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P } ) #model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) #model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
 
 
     #whatt we also need to do is fne tune, train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
@@ -359,16 +359,20 @@ def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, in
     # print("databse match :", REFERENCE.get() )
     return ai_resp
 
-def populate_chat_history(session_id : str):
-    
+def populate_chat_history(session_id : str) -> dict:
+
     if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
+        print("not popualted")
         global REFERENCE
         REFERENCE = db.reference(f"/{session_id}/chat_history")
-    
+        res_chat_history = {}
         chat_history = REFERENCE.get()
         if chat_history != None:
             for time, utterances in chat_history.items():
                 add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
+                res_chat_history[time] = {"HumanMessage": utterances['HumanMessage'], "AIMessage" : utterances['AIMessage']}
+
+            return res_chat_history
 
 
         # {'1712196777': {'AIMessage': "I'm really sorry to hear that you're going through this, Jin.", 'HumanMessage': 'I am Jin, I am 23 years old, and I struggle'}, 

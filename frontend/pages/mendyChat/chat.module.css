@@ -6,6 +6,28 @@
     height:85vh;
     margin: auto;
     z-index: -1;
+    background-image: linear-gradient(#A7C7E7, #F8C8DC);
+    overflow: scroll;
+
+}
+.aiChat{
+    padding: 20px;
+    box-shadow: 5px 10px black;
+    border-radius: 25px;
+    width: 70%;
+    height:auto;
+
+    background-color: #FAC898;
+
+
+}
+.humanChat{
+    padding: 20px;
+    box-shadow: 5px 10px black;
+    border-radius: 25px;
+    width: 70%;
+    height:auto;
+    background-color: #C1E1C1;
 
 }
 
