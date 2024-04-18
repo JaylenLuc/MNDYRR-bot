@@ -7,6 +7,7 @@ import copy
 
 
 load_dotenv()
+try_num = 2
 TRAIN_PATH = r"empatheticdialogues/train.csv"
 TEST_PATH = r"empatheticdialogues/test.csv"
 VALID_PATH = r"empatheticdialogues/valid.csv"
@@ -14,9 +15,10 @@ TRAIN_EMPATHETIC_DIALOGUES_DIR = r"empatheticdialogues"
 FORMATTED_TRAIN_DATA = r"empatheticdialogues/formated_train_data.jsonl"
 FORMATTED_TEST_DATA = r"empatheticdialogues/formated_test_data.jsonl"
 FORMATTED_VALID_DATA = r"empatheticdialogues/formated_valid_data.jsonl"
+STATS =fr"empatheticdialogues/stats_try{try_num}.csv"
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 client = openai.OpenAI(api_key= OPENAI_API_KEY)
-def _train_openai() -> str:
+def _create_files() -> str:
     print(client.files.create(
         file=open(FORMATTED_TRAIN_DATA, "rb"),
         purpose="fine-tune"
@@ -34,22 +36,23 @@ def _train_openai() -> str:
     '''
     FileObject(id='file-ogLA8W3uUbfEHsDveOZzKwkP', bytes=17122663, created_at=1713226472, filename='formated_train_data.jsonl', object='file', purpose='fine-tune', status='processed', status_details=None)
     FileObject(id='file-tfa2DDvl7XAEjGyiI5kXlgze', bytes=2533669, created_at=1713226474, filename='formated_valid_data.jsonl', object='file', purpose='fine-tune', status='processed', status_details=None)
-
-    FineTuningJob(id='ftjob-Rs6k6my3rd2TSHlt5rlfrvED', created_at=1713226585, error=Error(code=None, message=None, param=None, error=None), 
-    fine_tuned_model=None, finished_at=None, hyperparameters=Hyperparameters(n_epochs='auto', batch_size='auto', learning_rate_multiplier='auto'), 
-    model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files',
-      trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, 
-      seed=653073683, integrations=[])
     '''
 def _create_job() :
     print(client.fine_tuning.jobs.create(
     training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', 
     validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze',
-    model="gpt-3.5-turbo"
+    model="gpt-3.5-turbo",
+    hyperparameters={
+        "n_epochs":1,
+        "learning_rate_multiplier": 4,
+        "batch_size": 30
+
+    }
     ))
-def _print_check_jobs() :
-    print(client.fine_tuning.jobs.list(limit=10))
-    #client.fine_tuning.jobs.retrieve("ftjob-abc123")
+    #n_epochs, learning_rate, batch_size
+def _print_check_jobs(job : str) :
+    #print(client.fine_tuning.jobs.list(limit=10))
+    print(client.fine_tuning.jobs.retrieve(job))
 
 def _format_data(_path : str , format_path:str) -> None:
     current_write = None
@@ -114,23 +117,34 @@ if __name__ == "__main__":
     #_format_data(VALID_PATH, FORMATTED_VALID_DATA)
     #_format_data(TRAIN_PATH, FORMATTED_TRAIN_DATA)
     print("PREPROCESSING DONE")
-    #_train_openai()
-    ##_print_check_jobs()
 
-    #_format_data("")
     #_create_job()
-    #_print_check_jobs()
-    print(client.fine_tuning.jobs.retrieve('ftjob-Rs6k6my3rd2TSHlt5rlfrvED'))
-    print()
-    print(client.fine_tuning.jobs.retrieve('ftjob-mbP8MmFexJFgb0TrJKtFY77r'))
 
+    #num_steps = number of lines / batch_size
+
+    # content = client.files.retrieve_content('file-D75cuF7QfuKFM1Tpq8IHlzhy')
+    # print(type(content))
+    # with open(STATS, 'w') as training_res:
+    #     training_res.write(content)
+
+    _print_check_jobs('ftjob-mWYJyGDBCUVPtGEm2stWultk')
 
     ''' 
-    fine_tuned_model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
+    TRY 1:
+        fine_tuned_model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
 
-    FineTuningJob(id='ftjob-Rs6k6my3rd2TSHlt5rlfrvED', created_at=1713226585, error=Error(code=None, message=None, param=None, error=None), 
-    fine_tuned_model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm', finished_at=1713233468, hyperparameters=Hyperparameters(n_epochs=1, 
-    batch_size=13, learning_rate_multiplier=8), model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', 
-    result_files=['file-D75cuF7QfuKFM1Tpq8IHlzhy'], status='succeeded', trained_tokens=3281924, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', 
-    validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, seed=653073683, integrations=[])
+        FineTuningJob(id='ftjob-Rs6k6my3rd2TSHlt5rlfrvED', created_at=1713226585, error=Error(code=None, message=None, param=None, error=None), 
+        fine_tuned_model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm', finished_at=1713233468, hyperparameters=Hyperparameters(n_epochs=1, 
+        batch_size=13, learning_rate_multiplier=8), model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', 
+        result_files=['file-D75cuF7QfuKFM1Tpq8IHlzhy'], status='succeeded', trained_tokens=3281924, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', 
+        validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, seed=653073683, integrations=[])
+    
+    TRY 2:
+
+        FineTuningJob(id='ftjob-mWYJyGDBCUVPtGEm2stWultk', created_at=1713397114, error=Error(code=None, message=None, param=None, error=None), 
+        fine_tuned_model=None, finished_at=None, hyperparameters=Hyperparameters(n_epochs=1, batch_size=30, learning_rate_multiplier=4.0), 
+        model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files', 
+        trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, 
+        seed=1652443447, integrations=[])
+    
     '''

@@ -1,3 +1,16 @@
+@keyframes gradient {
+    0%{
+        background-position: 0% 50%;
+    }
+    50%{
+        background-position: 100% 50%;
+    }
+    100%{
+        background-position: 0% 50%;
+    }
+}   
+
+
 .mainbox{
     padding: 20px;
     box-shadow: 5px 10px black;
@@ -6,9 +19,11 @@
     height:85vh;
     margin: auto;
     z-index: -1;
-    background-image: linear-gradient(#A7C7E7, #F8C8DC);
+    background: linear-gradient(-45deg,#C1E1C1, #C3B1E1, #A7C7E7, #F8C8DC);
+    background-size: 400% 400%;
+    animation: gradient 3s ease infinite;
     overflow: scroll;
-    display: flex;
+    display: absolute;
     flex-direction: column-reverse;
 
 }

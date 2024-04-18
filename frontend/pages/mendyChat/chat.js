@@ -108,7 +108,6 @@ export default function chat() {
 
   //temporary, this variable will store the last valid server return value, the 
   //final version must store all responses 
-  const [_temp, _set_temp] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -151,7 +150,6 @@ export default function chat() {
           init_chat_hist[resp[0]] = {"AIMessage" : resp[1]["AIMessage"] , "HumanMessage" : resp[1]["HumanMessage"] }
           set_init_chat_hist(init_chat_hist)
         }
-        _set_temp(resp)
       })    
       .catch(err => { 
         console.log(err) 
