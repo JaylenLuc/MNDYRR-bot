@@ -6,7 +6,7 @@
         background-position: 100% 50%;
     }
     100%{
-        background-position: 0% 50%;
+        background-position: 50% 0%;
     }
 }   
 
@@ -21,9 +21,9 @@
     z-index: -1;
     background: linear-gradient(-45deg,#C1E1C1, #C3B1E1, #A7C7E7, #F8C8DC);
     background-size: 400% 400%;
-    animation: gradient 3s ease infinite;
+    animation: gradient 2s ease infinite;
     overflow: scroll;
-    display: absolute;
+    display: flex;
     flex-direction: column-reverse;
 
 }

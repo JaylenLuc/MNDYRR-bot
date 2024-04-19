@@ -53,10 +53,11 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
-OPEN_AI_TEMP = .7
-OPEN_AI_TOP_P = .8
+OPEN_AI_TEMP = .6
+OPEN_AI_TOP_P = .6
 # OPEN_AI_TOP_K = .7
-
+#openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 
+# 18994 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
 
 CONTEXT_COUNT = 5
 #data for training and for retreival
@@ -127,7 +128,8 @@ def start_RAG() -> list:
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) #model='ft:gpt-3.5-turbo-0125:personal::9ESZoNRm'
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
+    #model = "ft:gpt-3.5-turbo-0125:personal::9F9bmZc3"
 
 
     #whatt we also need to do is fne tune, train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai
@@ -352,7 +354,7 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
 
 @retry_with_exponential_backoff
 def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
-    if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
+    #if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
     ai_resp = chain.invoke(invoke_arg1, config = config)
     resp = None
     if enabled_cookies : 
@@ -362,32 +364,35 @@ def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, in
     # print("databse match :", REFERENCE.get() )
     return resp #[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
 
+@retry_with_exponential_backoff
 def populate_chat_history(session_id : str) -> dict:
 
-    if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
-        print("not popualted")
+    # if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
+    print("not popualted")
+    if (TEMP_CHAT_HISTORY == {}): 
         global REFERENCE
         REFERENCE = db.reference(f"/{session_id}/chat_history")
-        res_chat_history = {}
-        chat_history = REFERENCE.get()
-        if chat_history != None:
-            for time, utterances in chat_history.items():
-                add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
-                #datetime(year, month, day, hour=0, minute=0, second=0,
-                res_chat_history[time] = {"HumanMessage": utterances['HumanMessage'], "AIMessage" : utterances['AIMessage']}
-                #Y-M-D-H-M-S
-            
-            res_chat_history = dict(sorted(res_chat_history.items(),reverse=True,key=lambda x: ( int(x[0].split('-')[0]), 
-                                                                                    int(x[0].split('-')[1]),
-                                                                                    int(x[0].split('-')[2]), 
-                                                                                    int(x[0].split('-')[3]), 
-                                                                                    int(x[0].split('-')[4])) 
-                                                                                ))
-            for k,v in res_chat_history.items():
-                #k = '-'.join((str(k.year),str(k.month),str(k.day),str(k.hour),str(k.minute),str(k.second)))
-                print(k)
-            #print(res_chat_history)
-            return res_chat_history 
+    res_chat_history = {}
+    chat_history = REFERENCE.get()
+    if chat_history != None:
+        for time, utterances in chat_history.items():
+            add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
+            #datetime(year, month, day, hour=0, minute=0, second=0,
+            res_chat_history[time] = {"HumanMessage": utterances['HumanMessage'], "AIMessage" : utterances['AIMessage']}
+            #Y-M-D-H-M-S
+        
+        res_chat_history = dict(sorted(res_chat_history.items(),key=lambda x: ( -int(x[0].split('-')[0]), 
+                                                                                -int(x[0].split('-')[1]),
+                                                                                -int(x[0].split('-')[2]), 
+                                                                                -int(x[0].split('-')[3]), 
+                                                                                -int(x[0].split('-')[4])) 
+                                                                            ))
+        for k,v in res_chat_history.items():
+            #k = '-'.join((str(k.year),str(k.month),str(k.day),str(k.hour),str(k.minute),str(k.second)))
+            print(k)
+        #print(res_chat_history)
+        return res_chat_history 
+ 
 
 
         # {'1712196777': {'AIMessage': "I'm really sorry to hear that you're going through this, Jin.", 'HumanMessage': 'I am Jin, I am 23 years old, and I struggle'}, 
@@ -397,10 +402,12 @@ def populate_chat_history(session_id : str) -> dict:
     
 
 #def get last two utterances and send it to firebase()
+@retry_with_exponential_backoff
 def push_chat_to_DB( query :str, resp : str):
     currentDateAndTime = datetime.now()
 
-    currentTime = "-".join((str(i) for i in (currentDateAndTime.year, currentDateAndTime.month, currentDateAndTime.day,currentDateAndTime.hour,currentDateAndTime.minute,currentDateAndTime.second)))
+    currentTime = "-".join((str(i) for i in (currentDateAndTime.year, currentDateAndTime.month, currentDateAndTime.day,
+                                             currentDateAndTime.hour,currentDateAndTime.minute,currentDateAndTime.second)))
     REFERENCE.update({currentTime : {"AIMessage" : resp , "HumanMessage" : query}})
     #print("after push: ",REFERENCE.get())
     ''' 

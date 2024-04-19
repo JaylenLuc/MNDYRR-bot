@@ -51,9 +51,9 @@ def get_ai_response(req):
     
     #-----SERVER RESPONSE--------------------------------------
     INVOCATION_CHAIN_DICT["invoke_arg1"]["question"] = req.GET.get("question")
-    print(req)
+    print("req:",req)
     resp = AI.get_response(ENABLED_COOKIES,**INVOCATION_CHAIN_DICT) #[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
-    print(resp)
+    print("reps:",resp)
     return JsonResponse({"response":resp})
 
 

@@ -44,8 +44,8 @@ def _create_job() :
     model="gpt-3.5-turbo",
     hyperparameters={
         "n_epochs":1,
-        "learning_rate_multiplier": 4,
-        "batch_size": 30
+        "learning_rate_multiplier": 2,
+        "batch_size": 50
 
     }
     ))
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     # with open(STATS, 'w') as training_res:
     #     training_res.write(content)
 
-    _print_check_jobs('ftjob-mWYJyGDBCUVPtGEm2stWultk')
+    _print_check_jobs('ftjob-EJIcNxQuVq0gKQSw5tVN6kxu')
 
     ''' 
     TRY 1:
@@ -146,5 +146,11 @@ if __name__ == "__main__":
         model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files', 
         trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, 
         seed=1652443447, integrations=[])
+    
+    TRY 3:
+        FineTuningJob(id='ftjob-EJIcNxQuVq0gKQSw5tVN6kxu', created_at=1713566676, error=Error(code=None, message=None, param=None, error=None), fine_tuned_model=None,
+        finished_at=None, hyperparameters=Hyperparameters(n_epochs=1, batch_size=50, learning_rate_multiplier=2.0), model='gpt-3.5-turbo-0125', object='fine_tuning.job',
+        organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files', trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', 
+        validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, seed=1140413998, integrations=[])
     
     '''

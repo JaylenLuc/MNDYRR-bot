@@ -31,7 +31,7 @@ function CookiesComponent ({giveCookieConsent}) {
 }
 
 const ChatBubbles = ({init_chat_hist}) => Object.entries(init_chat_hist).map(entry => (
-        <div>
+        <div key={entry[0]}>
           <br></br>
           <div className={styles.humanChat}>
             {entry[0]}
