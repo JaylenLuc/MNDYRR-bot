@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
 @keyframes gradient {
     0%{
         background-position: 0% 50%;
@@ -10,55 +12,72 @@
     }
 }   
 
-
 .mainbox{
-    padding: 20px;
-    box-shadow: 5px 10px black;
+    /* padding: 20px; */
+    /* box-shadow: 5px 10px black; */
     border-radius: 25px;
-    width: 60%;
-    height:85vh;
+    width: 100%;
+    height: 85vh;
     margin: auto;
     z-index: -1;
-    background: linear-gradient(-45deg,#C1E1C1, #C3B1E1, #A7C7E7, #F8C8DC);
+    background: linear-gradient(-45deg, #FAC898, #eddfff, #ffdbf7, #ffdbe5, #ffdbf7, #eddfff);
     background-size: 400% 400%;
-    animation: gradient 2s ease infinite;
+    animation: gradient 7s ease infinite;
     overflow: scroll;
     display: flex;
     flex-direction: column-reverse;
-
 }
-.aiChat{
-    padding: 20px;
-    box-shadow: 5px 10px black;
-    border-radius: 25px;
-    width: 70%;
-    height:auto;
-    background-color: #FAC898;
-
-
-}
-.humanChat{
-    padding: 20px;
-    box-shadow: 5px 10px black;
-    border-radius: 25px;
-    width: 70%;
-    height:auto;
-    background-color: #C1E1C1;
-
-}
-
 
 .cookiesbox{
-    width: 30%;
     position: absolute;
-    left: 40%;
-    top: 20%;
-    margin : auto;
     padding: 20px;
-    box-shadow: 5px 10px black;
+    width: 20%;
+    left: 38%;
+    top: 25%;
+    margin : auto;
+    /* box-shadow: 5px 10px black; */
     border-radius: 25px;
-    height:42vh;
-    background-color: paleturquoise;
+    height: 25vh;
+    background-color: #E4D3FF;
     z-index:1;
+    font-family: 'Lato', sans-serif;
+}
 
+.humanChat{
+    position : relative;
+    z-index: 9999;
+    outline-style: solid;
+    outline-color: white;
+    outline-width: 2px;
+    padding: 20px;
+    /* box-shadow: 5px 3px white; */
+    border-radius: 50px;
+    width: 71.2%;
+    height:auto;
+    float: left;
+    background-color: #F2D7F2;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    font-family: 'Lato', sans-serif;
+}
+
+.aiChat{
+    position : relative;
+    outline-style: solid;
+    outline-color: white;
+    outline-width: 2px;
+    padding: 20px;
+    /* box-shadow: 5px 5px white; */
+    border-radius: 50px; /*  */
+    width: 70%;
+    height:auto;
+    background-color: #E4D3FF;
+    margin-left : 30px;
+    font-family: 'Lato', sans-serif
+}
+
+.date {
+    margin-left: 20px;
+    margin-bottom: 10px;
+    font-family: 'Lato', sans-serif;
 }

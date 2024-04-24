@@ -3,22 +3,26 @@ import styles from './components.module.css'
 import Button from '@mui/material/Button';
 import { useState } from "react";
 const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDisabled}) => (
-
+  // onInput={(e) => {
+  //   setSearchQuery(e.target.value);
+  // }}
+  // onChange={(text) => setBtnDisabled(!text.target.value)}
     
-    <form style={{zIndex : 0}}>
-      <TextField style={{zIndex : "inherit"}}
-        id="search-bar"
-        className={styles.querybar}
-        onInput={(e) => {
-          setSearchQuery(e.target.value);
-        }}
-        onChange={(text) => setBtnDisabled(!text.target.value)}
-        label="Enter what is on your mind"
-        variant="filled"
-        placeholder="Ask questions!"
-        size="medium"
-      />
-      <Button onTap variant="contained" disabled={btnDisabled} onClick={() => handleClick()}>Ask</Button> 
+    <form style={{zIndex : 0}} className={styles.querybar}>
+      <textarea className={styles.textBar}
+      
+            role="textbox" 
+            onInput={(e) => {
+            setSearchQuery(e.target.value);
+            }}
+            onChange={(text) => setBtnDisabled(!text.target.value)}
+            placeholder="Ask Mendy anything! What's on your mind?"
+            contenteditable
+            >
+            
+      </textarea>
+
+      <Button className = {styles.textButton} onTap variant="contained" disabled={btnDisabled} onClick={() => handleClick()}>Ask</Button> 
       
     </form>
 );

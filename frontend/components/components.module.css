@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
 .searchbar{
     width: 100%;
     position: relative;
@@ -7,14 +9,39 @@
 
 }
 .querybar{
-    width: 50%;
-    position: relative;
-
+    /* width: 50%; */
+    /* position: relative; */
+/* 
     margin-top: auto;
     margin-left: auto;
-    margin-right: auto;
+    margin-right: auto; */
     align-self: center;
     z-index: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Lato', sans-serif
 
+}
+
+.textBar{
+    width: 50%;
+    height: 7vh;
+    font-family: 'Lato', sans-serif;
+    border-radius: 20px; 
+    width: 70%;
+    border-style: solid;
+    max-height: 80;
+    resize: none;
+    font-size: medium;
+}
+
+.textButton{
+    left: 25px;
+    border-radius: 100px;
+    background: linear-gradient(-135deg, #FAC898, #eddfff, #ffdbf7, #ffdbe5, #ffdbf7, #eddfff);
+    background-size: 150% 150%;
+    animation: gradient 3s ease infinite;
+    color: black;
 
 }

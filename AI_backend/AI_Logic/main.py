@@ -53,8 +53,8 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
-OPEN_AI_TEMP = .6
-OPEN_AI_TOP_P = .6
+OPEN_AI_TEMP = .8
+OPEN_AI_TOP_P = .7
 # OPEN_AI_TOP_K = .7
 #openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 
 # 18994 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
@@ -82,7 +82,7 @@ def start_firebase():
     except:
         return False
 
-@retry_with_exponential_backoff
+
 def start_RAG() -> list:
 
     #TEMP TEST ON JSON SERIALIZATION-----------------------------------------------------
@@ -129,7 +129,7 @@ def start_RAG() -> list:
     """
 
     model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
-    #model = "ft:gpt-3.5-turbo-0125:personal::9F9bmZc3"
+    #model = 'ft:gpt-3.5-turbo-0125:personal::9FrftTrx'
 
 
     #whatt we also need to do is fne tune, train data either using a pretrained model or use an empathetic dataset. Heres the link to fine tune suing pretrained model https://python.langchain.com/docs/integrations/chat/openai

@@ -13,7 +13,7 @@ function CookiesComponent ({giveCookieConsent}) {
 
         <form className = {styles.cookiesbox}>
             <p>
-                We use cookies and get your intial general location to save your message history and provide Mendy context to better understand you!
+                We use cookies to save your message history and provide Mendy context to better understand you!
                 Don't worry, you can opt in and its totally up to you. You can still have a great experience
                 without it.
             </p>
@@ -32,15 +32,18 @@ function CookiesComponent ({giveCookieConsent}) {
 
 const ChatBubbles = ({init_chat_hist}) => Object.entries(init_chat_hist).map(entry => (
         <div key={entry[0]}>
+          <span className = {styles.date}>{entry[0].split("-")[1]}/{entry[0].split("-")[2]}/{entry[0].split("-")[0]} {entry[0].split("-")[3].length == 1 ? "0" + entry[0].split("-")[3] : entry[0].split("-")[3]} : {entry[0].split("-")[4].length == 1 ? "0" + entry[0].split("-")[4] : entry[0].split("-")[4]}</span>
           <br></br>
           <div className={styles.humanChat}>
-            {entry[0]}
+            <strong>You</strong>
             <br></br>
             {entry[1]['HumanMessage']}
           </div>
-          <br></br>
+
           <div className={styles.aiChat}>
-            {entry[0]}
+            <br></br>
+            <br></br>
+            <strong>Mendy</strong>
             <br></br>
             {entry[1]['AIMessage']}
           </div>
@@ -233,6 +236,7 @@ export default function chat() {
       <Head>
         <title>Main Page</title>
         <link rel="icon" href="/favicon.ico" />
+
       </Head>
 
       <main>
@@ -247,6 +251,7 @@ export default function chat() {
           init_chat_hist? <ChatBubbles init_chat_hist={init_chat_hist}/> : null
         }
       </Box> 
+      <br></br>
       <RealSearchBar handleClick={handleClick} searchQuery={searchQuery} setSearchQuery={setSearchQuery} btnDisabled={btnDisabled} setBtnDisabled={setBtnDisabled} />  
 
       </main>
