@@ -54,12 +54,12 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
 OPEN_AI_TEMP = .8
-OPEN_AI_TOP_P = .7
+OPEN_AI_TOP_P = .8
 # OPEN_AI_TOP_K = .7
 #openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 
 # 18994 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
 
-CONTEXT_COUNT = 5
+CONTEXT_COUNT = 15
 #data for training and for retreival
 TEMP_CHAT_HISTORY = {}
 TEMP_USER_ID = "TEST_USER"
@@ -109,19 +109,14 @@ def start_RAG() -> list:
     #besides from systemMessagePrompt/prompt engineering and hyperparameter tuning on nucleus sampling, we can fine tune the LLm and train it on a empathic dataset. I adjusted temp and top_p
 
     prompt_template = """
-    Answer the question based on your internal knowledge, Chat history, and the Training Data. Do not list out your responses unless prompted or applicable. \
+    Your answers must be presented in paragraph form or you will be punished. Be inquisitive and ask the Human about their condition. Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.\
     Explain why you give this response. If you think your response is the best possible response please say 'certain'\
-    after your response. Provide help and resources to the user whenever possible. If you are not confident with your response, please use the context and training data provided. \
+    after your response. Provide help and resources to the user whenever possible.\
     You will be punished if the answer you give is not empathetic or optimal .\
     Try to be empathetic as possible because you are talking to a young human. Give them tanigble advice and coping mechanism and explain why. 
-    If the context is insufficient do not say you can't provide the answer or any help to your question based on the given context but rather respond with a phrase similar to 'that is a difficult question' 
-    and answer as best as possible. You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
-    relevant advice, or resources to help the individual as much as possible. If you are aware of any resources please provide it for the human. \
-    When communicating with the Human individual, see them as as subjects situated in a social \
-    world. Like empathy, social sensitivity consists in understanding the states and feelings of others. Their life will be impacted by your answers, be loving. \
-    If they are going to harm themselves,  or talk about suicide, ask them why. If you know why, give them tangible advice to the best of your ability. \
-    Be encouraging, act like you are the human's parent and that you genuinely love them. But remember to also be logical coherent and logically sound. Feel free to use emojis when appropriate!\
-    Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.
+    You are an empathetic,socially sensitive entity that communicates with human beings. Attempt to understand or rationalize their feelings, provide reassurance, \
+    relevant advice, or resources to help the individual as much as possible. \
+    Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!\
     Context: {context}
     Training Data: {train_data}
     Question: {question}
@@ -168,6 +163,7 @@ def train_model() -> FAISS:
         trained_vector_store = ""
         if os.path.exists(EMPATHIC_DATA_FAISS):
             trained_vector_store = FAISS.load_local(EMPATHIC_DATA_FAISS, training_embeddings)
+            print("local load")
         #EMPATHICDATA
         else:
             
@@ -278,7 +274,7 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
     #print(vstore,prompt_template,model,CONTEXT_COUNT,message)
 
     context_retr = vstore.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
-    training_data = trained_vector_store.as_retriever(search_type="similarity")
+    training_data = trained_vector_store.as_retriever(search_type="similarity",search_kwargs={'k': CONTEXT_COUNT})
 
     qa_template = ChatPromptTemplate.from_messages(
     [
@@ -353,16 +349,23 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
             "config": config}
 
 @retry_with_exponential_backoff
-def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
+def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     #if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
     ai_resp = chain.invoke(invoke_arg1, config = config)
     resp = None
-    if enabled_cookies : 
+    if enabled_cookies :
+        if (REFERENCE == None) :
+            set_chat_hist(session_id)
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
+            
+
     # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
     # print("databse match :", REFERENCE.get() )
     return resp #[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
+def set_chat_hist(session_id : str):
+    global REFERENCE
+    REFERENCE = db.reference(f"/{session_id}/chat_history")
 
 @retry_with_exponential_backoff
 def populate_chat_history(session_id : str) -> dict:
@@ -371,8 +374,7 @@ def populate_chat_history(session_id : str) -> dict:
     print("populate chat history : ",TEMP_CHAT_HISTORY)
     bulk_populate = False
     if (TEMP_CHAT_HISTORY == {}): 
-        global REFERENCE
-        REFERENCE = db.reference(f"/{session_id}/chat_history")
+        set_chat_hist(session_id )
         bulk_populate = True
     
     res_chat_history = {}

@@ -43,5 +43,14 @@
     background-size: 150% 150%;
     animation: gradient 3s ease infinite;
     color: black;
+    width: 5vw;
+    height: 5vw;
+    text-align: center;
 
+}
+/* 'absolute inset-0 opacity-0 -z-100 pointer-events-none' */
+.starz{
+    opacity:0;
+    z-index: -999999;
+    pointer-events: none;
 }

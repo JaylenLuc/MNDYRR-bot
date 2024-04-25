@@ -20,9 +20,9 @@
     height: 85vh;
     margin: auto;
     z-index: -1;
-    background: linear-gradient(-45deg,  #C1E1C1,#FAC898, #eddfff, #ffdbf7, #ffdbe5, #ffdbf7, #eddfff,#FFFAA0);
+    background: linear-gradient(-45deg,  #C1E1C1,#f8cfa8, #eddfff, #ffdbf7, #ffdbe5, #ffdbf7, #eddfff,#FFFAA0);
     background-size: 300% 300%;
-    animation: gradient 3s ease infinite;
+    animation: gradient 6s ease infinite;
     overflow: scroll;
     display: flex;
     flex-direction: column-reverse;
