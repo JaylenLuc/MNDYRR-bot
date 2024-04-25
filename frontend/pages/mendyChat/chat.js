@@ -82,7 +82,7 @@ export default function chat() {
         }else{
           if (resp != "FALSE"){
             //window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
-            console.log("yes!")
+            console.log("cookie!")
             console.log("response",resp)
             set_init_chat_hist(resp)
             Object.entries(resp).map(entry => (
@@ -108,9 +108,6 @@ export default function chat() {
   //DEMO SECTION
   //add a disclaimer popup before use of the chat bot section
   //https:/www.dualdiagnosis.org.uk/chatbot-disclaimer/
-
-  //temporary, this variable will store the last valid server return value, the 
-  //final version must store all responses 
   const [searchQuery, setSearchQuery] = useState("");
 
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -149,9 +146,18 @@ export default function chat() {
           console.log(window.localStorage.getItem("MENDY_SESSION"))
         }else{
           //window.localStorage.setItem("MENDY_SESSION_CHAT_HIST", resp)
-          console.log("YES!")
-          init_chat_hist[resp[0]] = {"AIMessage" : resp[1]["AIMessage"] , "HumanMessage" : resp[1]["HumanMessage"] }
-          set_init_chat_hist(init_chat_hist)
+          console.log("on handle click:", resp)
+
+          let newChats = {}
+          newChats[resp[0]] = {"AIMessage" : resp[1]["AIMessage"] , "HumanMessage" : resp[1]["HumanMessage"] }
+          Object.entries(init_chat_hist).map(entry => (
+            newChats[entry[0]] = {'HumanMessage' : entry[1]['HumanMessage'], "AIMessage" :  entry[1]["AIMessage"]}
+
+          ))
+          
+          
+          set_init_chat_hist(newChats)
+
         }
       })    
       .catch(err => { 
@@ -217,16 +223,16 @@ export default function chat() {
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
-    if(typeof window !== 'undefined' && window.localStorage  && window.localStorage.getItem("MENDY_CONSENT") == "true"){ 
+    if(typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem("MENDY_CONSENT") == "true"){ 
       setCookieComponent(null)
-      sendJWT()
+      //sendJWT()
     
     }
     return () => {
       //unmount code
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  },[]);
+  },[init_chat_hist]);
 
 
   return (

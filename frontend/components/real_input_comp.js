@@ -2,6 +2,7 @@ import TextField from "@mui/material/TextField";
 import styles from './components.module.css'
 import Button from '@mui/material/Button';
 import { useState } from "react";
+
 const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setBtnDisabled}) => (
   // onInput={(e) => {
   //   setSearchQuery(e.target.value);
@@ -9,7 +10,7 @@ const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setB
   // onChange={(text) => setBtnDisabled(!text.target.value)}
     
     <form style={{zIndex : 0}} className={styles.querybar}>
-      <textarea className={styles.textBar}
+      <textarea id = "search" className={styles.textBar}
       
             role="textbox" 
             onInput={(e) => {
@@ -22,7 +23,13 @@ const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setB
             
       </textarea>
 
-      <Button className = {styles.textButton} onTap variant="contained" disabled={btnDisabled} onClick={() => handleClick()}>Ask</Button> 
+      <Button className = {styles.textButton} onTap variant="contained" disabled={btnDisabled} onClick={() => {
+            handleClick()
+            setSearchQuery("")
+            document.getElementById("search").value = "";
+            
+          }
+        }>Ask</Button> 
       
     </form>
 );

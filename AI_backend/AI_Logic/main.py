@@ -368,15 +368,18 @@ def get_response( enabled_cookies : bool, chain : RunnableWithMessageHistory, in
 def populate_chat_history(session_id : str) -> dict:
 
     # if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
-    print("not popualted")
+    print("populate chat history : ",TEMP_CHAT_HISTORY)
+    bulk_populate = False
     if (TEMP_CHAT_HISTORY == {}): 
         global REFERENCE
         REFERENCE = db.reference(f"/{session_id}/chat_history")
+        bulk_populate = True
+    
     res_chat_history = {}
     chat_history = REFERENCE.get()
     if chat_history != None:
         for time, utterances in chat_history.items():
-            add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
+            if bulk_populate : add_session_history(session_id, TEMP_CONV_ID, utterances['HumanMessage'], utterances['AIMessage'])
             #datetime(year, month, day, hour=0, minute=0, second=0,
             res_chat_history[time] = {"HumanMessage": utterances['HumanMessage'], "AIMessage" : utterances['AIMessage']}
             #Y-M-D-H-M-S
