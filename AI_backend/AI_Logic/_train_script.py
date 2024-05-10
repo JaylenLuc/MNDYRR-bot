@@ -118,7 +118,7 @@ if __name__ == "__main__":
     #_format_data(TRAIN_PATH, FORMATTED_TRAIN_DATA)
     print("PREPROCESSING DONE")
 
-    #_create_job()
+   # _create_job()
 
     #num_steps = number of lines / batch_size
 
@@ -127,7 +127,8 @@ if __name__ == "__main__":
     # with open(STATS, 'w') as training_res:
     #     training_res.write(content)
     #_create_job()
-    _print_check_jobs('ftjob-XcnmdHUi02RxkaL04yGvbPD4')
+    #client.fine_tuning.jobs.cancel('ftjob-owkfQeIqkR7o9kod3MIYKMDN')
+    _print_check_jobs('ftjob-I5tUWodcBjrSPiumsHEs6rX7')
 
     ''' 
     TRY 1:
@@ -156,9 +157,17 @@ if __name__ == "__main__":
         fine_tuned_model='ft:gpt-3.5-turbo-0125:personal::9FrftTrx'
     
     TRY 4:
-        FineTuningJob(id='ftjob-XcnmdHUi02RxkaL04yGvbPD4', created_at=1714067488, error=Error(code=None, message=None, param=None), 
+        FineTuningJob(id='ftjob-owkfQeIqkR7o9kod3MIYKMDN', created_at=1714085067, error=Error(code=None, message=None, param=None), 
         fine_tuned_model=None, finished_at=None, hyperparameters=Hyperparameters(n_epochs=1, batch_size=50, learning_rate_multiplier=0.1), 
+        model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files',
+        trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None,
+        seed=1304753199, estimated_finish=None, integrations=[])
+    
+    TRY 5:
+        FineTuningJob(id='ftjob-I5tUWodcBjrSPiumsHEs6rX7', created_at=1714173427, error=Error(code=None, message=None, param=None), 
+        fine_tuned_model=None, finished_at=None, hyperparameters=Hyperparameters(n_epochs=1, batch_size=50, learning_rate_multiplier=0.1),
         model='gpt-3.5-turbo-0125', object='fine_tuning.job', organization_id='org-HstPDf12TxQSRwVSYEM1AOlo', result_files=[], status='validating_files', 
         trained_tokens=None, training_file='file-ogLA8W3uUbfEHsDveOZzKwkP', validation_file='file-tfa2DDvl7XAEjGyiI5kXlgze', user_provided_suffix=None, 
-        seed=2130971076, estimated_finish=None, integrations=[])
+        seed=442177623, estimated_finish=None, integrations=[])
+
     '''
