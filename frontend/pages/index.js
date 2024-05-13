@@ -13,7 +13,7 @@ export default function Home() {
       </Head>
 
       <main>
-        <Link href="/chatbot/chat">chat bot page!</Link>
+        <Link href="/mendyChat/chat">chat bot page!</Link>
 
       </main>
     </div>
