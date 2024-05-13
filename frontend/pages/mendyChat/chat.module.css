@@ -31,16 +31,18 @@
 .cookiesbox{
     position: absolute;
     padding: 20px;
-    width: 20%;
-    left: 38%;
-    top: 25%;
     margin : auto;
+    top : 25%;
+    left: 20%;
+    right : 20%;
     /* box-shadow: 5px 10px black; */
     border-radius: 25px;
-    height: 25vh;
+    display: flex;
     background-color: #E4D3FF;
     z-index:1;
     font-family: 'Lato', sans-serif;
+    justify-content: center;
+    align-items: center;
 }
 
 .humanChat{
@@ -81,3 +83,6 @@
     margin-bottom: 10px;
     font-family: 'Lato', sans-serif;
 }
+
+
+
