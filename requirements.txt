@@ -90,8 +90,7 @@ langchain-openai<=0.0.8
 langdetect==1.0.9
 langfuse==2.21.1
 langsmith
-llama-index==0.9.48
-llama-parse==0.1.4
+
 lxml==5.1.0
 MarkupSafe==2.1.5
 marshmallow==3.21.1
