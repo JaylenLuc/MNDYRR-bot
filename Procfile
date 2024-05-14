@@ -1,1 +1,1 @@
-web: gunicorn AI_backend.AI_backend.wsgi --log-file -
+web:gunicorn AI_backend.AI_backend.wsgi --log-file -
