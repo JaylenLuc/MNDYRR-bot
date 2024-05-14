@@ -136,7 +136,7 @@ def start_RAG() -> list:
 
 def _process_train_data(train_csv):
     count = 2
-    outpath = r"AI_Logic/empatheticdialogues/modified.csv"
+    outpath = r"empatheticdialogues/modified.csv"
     with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file, open(fr"{outpath}", "w", encoding="utf-8", errors="replace") as outfile:
         reader = csv.DictReader(file)
         for (row, line) in zip(reader, file):
