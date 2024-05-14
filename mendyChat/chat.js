@@ -3,7 +3,7 @@ import Head from 'next/head';
 import styles from './chat.module.css';
 import {Box,Button} from '@mui/material';
 import { useState } from "react";
-import RealSearchBar from "../../components/real_input_comp"
+import RealSearchBar from "../components/real_input_comp"
 import axios from 'axios';
 import { useEffect } from 'react';
 import {HmacSHA256, enc} from 'crypto-js'
@@ -66,7 +66,7 @@ const ChatBubbles = ({init_chat_hist}) => Object.entries(init_chat_hist).map(ent
 
 
 
-export default function chat() {
+export default function Chat() {
 
   function sendJWT(){
     if(typeof window !== 'undefined' && window.localStorage ){
@@ -255,7 +255,7 @@ export default function chat() {
 
     <div>
       <Head>
-        <title>Main Page</title>
+        <title>Chat</title>
         <link rel="icon" href="/favicon.ico" />
 
       </Head>

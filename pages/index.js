@@ -2,20 +2,12 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import Link from 'next/link';
+import Chat from '../mendyChat/chat';
 
 export default function Home() {
   return (
-    <div className={styles.container}>
-      
-      <Head>
-        <title>Main Page</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
 
-      <main>
-        <Link href="/mendyChat/chat">chat bot page!</Link>
+      <Chat></Chat>
 
-      </main>
-    </div>
   );
 }
