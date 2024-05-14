@@ -65,15 +65,16 @@ TEMP_CHAT_HISTORY = {}
 TEMP_USER_ID = "TEST_USER"
 TEMP_CONV_ID = "1"
 
-
-TRAIN_EMPATHETIC_DIALOGUES_CSV = r"app/AI_backend/AI_Logic/empatheticdialogues/train.csv"
-TRAIN_EMPATHETIC_DIALOGUES_DIR = r"app/AI_backend/AI_Logic/empatheticdialogues"
-EMPATHIC_DATA_FAISS = r"app/AI_backend/AI_Logic/empatheticdialogues/empathic_faiss"
-MOD_DATA = r"app/AI_backend/AI_Logic/empatheticdialogues/modified.csv"
-#FIREBASE_JSON = r"AI_backend/AI_backend/AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+CURR_DIR = os.getcwd() + '/' + 'AI_backend/AI_Logic/'
+print(CURR_DIR)
+TRAIN_EMPATHETIC_DIALOGUES_CSV = CURR_DIR + r"train.csv"
+TRAIN_EMPATHETIC_DIALOGUES_DIR = CURR_DIR + r"empatheticdialogues"
+EMPATHIC_DATA_FAISS = CURR_DIR + r"empathic_faiss"
+MOD_DATA = CURR_DIR + r"modified.csv"
+#FIREBASE_JSON = CURR_DIR + r"mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
 FIREBASE_JSON = os.getenv("FIREBASE_JSON")
 REFERENCE = None
-VALID_PATH = r"app/AI_backend/AI_Logic/empatheticdialogues/valid.csv"
+VALID_PATH = CURR_DIR + r"valid.csv"
 def start_firebase():
     try:
         firebase_json = eval(FIREBASE_JSON)
@@ -136,7 +137,7 @@ def start_RAG() -> list:
 
 def _process_train_data(train_csv):
     count = 2
-    outpath = r"empatheticdialogues/modified.csv"
+    outpath = r"modified.csv"
     with open(fr"{train_csv}", "r+", encoding="utf-8", errors="replace") as file, open(fr"{outpath}", "w", encoding="utf-8", errors="replace") as outfile:
         reader = csv.DictReader(file)
         for (row, line) in zip(reader, file):

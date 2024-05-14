@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     #num_steps = number of lines / batch_size
 
-    # content = client.files.retrieve_content('file-D75cuF7QfuKFM1Tpq8IHlzhy')
+    content = client.files.retrieve_content('file-D75cuF7QfuKFM1Tpq8IHlzhy')
     # print(type(content))
     # with open(STATS, 'w') as training_res:
     #     training_res.write(content)
