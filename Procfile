@@ -1,1 +1,1 @@
-web:gunicorn AI_backend.AI_backend.wsgi
+web:gunicorn AI_backend.AI_backend.wsgi:application
