@@ -70,8 +70,8 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_backend/AI_logic/empatheticdialogues/train
 TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_backend/AI_logic/empatheticdialogues"
 EMPATHIC_DATA_FAISS = r"AI_backend/AI_logic/empatheticdialogues/empathic_faiss"
 MOD_DATA = r"AI_backend/AI_Logic/empatheticdialogues/modified.csv"
-FIREBASE_JSON = r"AI_backend/AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
-#FIREBASE_JSON = os.getenv("FIREBASE_JSON")
+#FIREBASE_JSON = r"AI_backend/AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+FIREBASE_JSON = os.getenv("FIREBASE_JSON")
 REFERENCE = None
 VALID_PATH = r"AI_backend/AI_logic/empatheticdialogues/valid.csv"
 def start_firebase():
