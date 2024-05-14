@@ -42,14 +42,14 @@ import pydantic
 from AI_Logic.exponential_backoff import retry_with_exponential_backoff
 load_dotenv()
 #ASTRADB KEYS
-ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES
-ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT") #CHANGE IF DATABASE COLLECTION CHANGES
+ASTRA_DB_APPLICATION_TOKEN = os.getenv("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES
+ASTRA_DB_API_ENDPOINT = os.getenv("ASTRA_DB_API_ENDPOINT") #CHANGE IF DATABASE COLLECTION CHANGES
 #OPENAI KEYS
-OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPEN_AI_API_KEY = os.getenv("OPENAI_API_KEY")
 #ASTRADB COLLECTION NAME
-ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
-ASTRA_DB_COLLECTION_ONE = os.environ.get("ASTRA_DB_COLLECTION_ONE")
-FIREBASE_URL = os.environ.get("FIREBASE_URL")
+ASTRA_DB_COLLECTION = os.getenv("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
+ASTRA_DB_COLLECTION_ONE = os.getenv("ASTRA_DB_COLLECTION_ONE")
+FIREBASE_URL = os.getenv("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
@@ -66,13 +66,14 @@ TEMP_USER_ID = "TEST_USER"
 TEMP_CONV_ID = "1"
 
 
-TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_logic/empatheticdialogues/train.csv"
-TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_logic/empatheticdialogues"
-EMPATHIC_DATA_FAISS = r"AI_logic/empatheticdialogues/empathic_faiss"
+TRAIN_EMPATHETIC_DIALOGUES_CSV = r"AI_backend/AI_logic/empatheticdialogues/train.csv"
+TRAIN_EMPATHETIC_DIALOGUES_DIR = r"AI_backend/AI_logic/empatheticdialogues"
+EMPATHIC_DATA_FAISS = r"AI_backend/AI_logic/empatheticdialogues/empathic_faiss"
 MOD_DATA = r"AI_Logic/empatheticdialogues/modified.csv"
-FIREBASE_JSON = r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+#FIREBASE_JSON = r"AI_backend/AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+FIREBASE_JSON = os.getenv("FIREBASE_JSON")
 REFERENCE = None
-VALID_PATH = r"AI_logic/empatheticdialogues/valid.csv"
+VALID_PATH = r"AI_backend/AI_logic/empatheticdialogues/valid.csv"
 def start_firebase():
     try:
         cred = credentials.Certificate(FIREBASE_JSON)
@@ -94,9 +95,9 @@ def start_RAG() -> list:
     embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
     vstore = AstraDB(
         embedding=embedding,
-        collection_name=os.environ["ASTRA_DB_COLLECTION_ONE"],
-        token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
-        api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
+        collection_name=ASTRA_DB_COLLECTION_ONE,
+        token=ASTRA_DB_APPLICATION_TOKEN,
+        api_endpoint=ASTRA_DB_API_ENDPOINT,
     )
     print("DB STORE DONE")
 

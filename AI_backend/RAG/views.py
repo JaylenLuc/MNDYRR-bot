@@ -9,7 +9,7 @@ import os
 
 load_dotenv()
 #ASTRADB KEYS
-JWT_SECRET_SALT = os.environ.get("JWT_SECRET_SALT")
+JWT_SECRET_SALT = os.getenv("JWT_SECRET_SALT")
 # Create your views here.
 #this is to start the connection and build the AI 
 
