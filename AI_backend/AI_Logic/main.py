@@ -76,9 +76,10 @@ REFERENCE = None
 VALID_PATH = r"empatheticdialogues/valid.csv"
 def start_firebase():
     try:
-        print(type(FIREBASE_JSON))
-        print(FIREBASE_JSON)
-        cred = credentials.Certificate(eval(FIREBASE_JSON))
+        firebase_json = eval(FIREBASE_JSON)
+        print(type(firebase_json))
+        #print(FIREBASE_JSON)
+        cred = credentials.Certificate(firebase_json)
         firebase_admin.initialize_app(cred, {"databaseURL" : FIREBASE_URL})
 
         return True
