@@ -81,7 +81,7 @@ def start_firebase():
         #print(FIREBASE_JSON)
         cred = credentials.Certificate(firebase_json)
         firebase_admin.initialize_app(cred, {"databaseURL" : FIREBASE_URL})
-
+        print("ACTIVE")
         return True
     except:
         return False
