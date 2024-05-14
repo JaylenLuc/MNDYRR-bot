@@ -122,7 +122,7 @@ const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setB
             }}
             onChange={(text) => setBtnDisabled(!text.target.value)}
             placeholder="Ask Mendy anything! What's on your mind?"
-            contenteditable
+            
             >
             
       </textarea>

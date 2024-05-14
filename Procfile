@@ -1,1 +1,1 @@
-heroku web: gunicorn mndyrr.wsgi
+web: gunicorn AI_backend.AI_backend.wsgi --log-file -
