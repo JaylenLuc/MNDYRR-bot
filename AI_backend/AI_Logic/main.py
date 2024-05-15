@@ -78,8 +78,8 @@ VALID_PATH = CURR_DIR + r"valid.csv"
 def start_firebase():
     try:
         firebase_json = eval(FIREBASE_JSON)
-        print(type(firebase_json))
-        #print(FIREBASE_JSON)
+        #print(type(firebase_json))
+        #print(firebase_json)
         cred = credentials.Certificate(firebase_json)
         firebase_admin.initialize_app(cred, {"databaseURL" : FIREBASE_URL})
         print("ACTIVE")

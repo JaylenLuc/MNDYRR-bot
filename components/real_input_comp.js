@@ -14,8 +14,8 @@ const RealSearchBar = ({handleClick,searchQuery,setSearchQuery,btnDisabled, setB
   const stars_animation = stars.map((_, index)=> [
     `.sparkle-${index}`,
     {
-      x : randomNumber(-150,150),
-      y : randomNumber(-100,100),
+      x : randomNumber(-100,100),
+      y : randomNumber(-50,50),
       scale : randomNumber(0.2,4),
       opacity : 1,
 
