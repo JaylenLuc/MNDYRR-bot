@@ -24,7 +24,9 @@ FIREBASE_ACTIVE = AI.start_firebase()
 
 #---------------------------------------------------------
 TRAIN_VECTOR_STORE = AI.train_model()
+print("trained")
 INVOCATION_CHAIN_DICT = AI.prepare_chain(*AI_PACK,TRAIN_VECTOR_STORE)
+print("invoked")
 ENABLED_COOKIES = False
 def get_ai_response(req):
     #req.GET.get("question"),
