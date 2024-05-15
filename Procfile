@@ -1,1 +1,1 @@
-web:gunicorn AI_backend.AI_backend.wsgi:application
+web:python AI_backend/manage.py runserver 127.0.0.1:8000
