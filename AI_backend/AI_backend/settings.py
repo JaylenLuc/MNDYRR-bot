@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'RAG',
-    'AI_Logic',
+    'AI_backend.RAG',
+    'AI_backend.AI_Logic',
     'rest_framework',
     'corsheaders',
     
