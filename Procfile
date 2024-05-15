@@ -1,1 +1,2 @@
-web: gunicorn AI_backend.AI_backend.wsgi --bind 0.0.0.0:$PORT && npm run build && npm start
+web: gunicorn AI_backend.AI_backend.wsgi --bind 0.0.0.0:$PORT
+worker: npm start

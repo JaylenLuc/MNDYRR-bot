@@ -3,8 +3,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "start": "next start",
-    "deploy": "npm start"
+    "start": "next start"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
