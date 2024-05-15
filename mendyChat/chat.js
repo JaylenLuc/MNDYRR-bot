@@ -85,7 +85,7 @@ export default function Chat() {
 
         }
       }
-      axios.get('http://0.0.0.0:8000/ai/setcookies/', JWT_options)
+      axios.get('http://0.0.0.0:80/ai/setcookies/', JWT_options)
       .then(res => {
         //console.log(res['data']['response'])
         let resp = res['data']['response']
@@ -150,7 +150,7 @@ export default function Chat() {
           geolocation : geolocation
         }
       }
-      axios.get('http://0.0.0.0:8000/ai/query', JWT_options)
+      axios.get('http://0.0.0.0:80/ai/query', JWT_options)
       .then(res => {
         //console.log(res['data']['response'])
         let resp = res['data']['response'] //[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
