@@ -39,7 +39,7 @@ import csv
 
 import pydantic
 
-from AI_Logic.exponential_backoff import retry_with_exponential_backoff
+from AI_backend.AI_Logic.exponential_backoff import retry_with_exponential_backoff
 load_dotenv()
 #ASTRADB KEYS
 ASTRA_DB_APPLICATION_TOKEN = os.getenv("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES

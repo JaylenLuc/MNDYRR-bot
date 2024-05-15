@@ -1,8 +1,8 @@
 import django
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-import AI_Logic.main as AI
-import RAG.JWT as JWT
+import AI_backend.AI_Logic.main as AI
+import AI_backend.RAG.JWT as JWT
 from dotenv import load_dotenv
 import os
  

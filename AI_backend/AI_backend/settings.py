@@ -36,7 +36,7 @@ ALLOWED_HOSTS = ['https://mndyrr-a1c7aecf84c3.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+#STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
@@ -67,7 +67,7 @@ MIDDLEWARE = [
 
 ]
 
-ROOT_URLCONF = 'AI_backend.urls'
+ROOT_URLCONF = 'AI_backend.AI_backend.urls'
 
 TEMPLATES = [
     {
