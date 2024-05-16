@@ -378,12 +378,11 @@ def set_chat_hist(session_id : str):
 
 @retry_with_exponential_backoff
 def populate_chat_history(session_id : str) -> dict:
-
+    set_chat_hist(session_id)
     # if (TEMP_CHAT_HISTORY == {}): #if chat history has not been got yet
     print("populate chat history : ",TEMP_CHAT_HISTORY)
     bulk_populate = False
     if (TEMP_CHAT_HISTORY == {}): 
-        set_chat_hist(session_id )
         bulk_populate = True
     
     res_chat_history = {}
