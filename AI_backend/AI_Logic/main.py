@@ -364,7 +364,7 @@ def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMe
     resp = None
     if enabled_cookies :
         #if (REFERENCE == None) : #becuase REFERENCE doesnt equal None so it doesnt update and always pushes to the first user signed in
-        set_chat_hist(session_id)
+        set_chat_hist(config['configurable']['user_id'])
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
         print("pushed")
 
