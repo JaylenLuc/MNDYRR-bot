@@ -357,11 +357,14 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
 def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     #if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
     print("getting response")
+    print("session_id:",session_id)
+    print("config: ",config)
+    #problem here is that its pushing to the same key in firebase everysingle time
     ai_resp = chain.invoke(invoke_arg1, config = config)
     resp = None
     if enabled_cookies :
-        if (REFERENCE == None) :
-            set_chat_hist(session_id)
+        #if (REFERENCE == None) : #becuase REFERENCE doesnt equal None so it doesnt update and always pushes to the first user signed in
+        set_chat_hist(session_id)
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
         print("pushed")
 
