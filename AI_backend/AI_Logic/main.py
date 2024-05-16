@@ -71,20 +71,21 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = CURR_DIR + r"train.csv"
 TRAIN_EMPATHETIC_DIALOGUES_DIR = CURR_DIR + r"empatheticdialogues"
 EMPATHIC_DATA_FAISS = CURR_DIR + r"empathic_faiss"
 MOD_DATA = CURR_DIR + r"modified.csv"
-#FIREBASE_JSON = CURR_DIR + r"mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
-FIREBASE_JSON = os.getenv("FIREBASE_JSON")
+FIREBASE_JSON =  r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+#FIREBASE_JSON = os.getenv("FIREBASE_JSON")
 REFERENCE = None
 VALID_PATH = CURR_DIR + r"valid.csv"
 def start_firebase():
     try:
         firebase_json = eval(FIREBASE_JSON)
-        #print(type(firebase_json))
-        #print(firebase_json)
+        print(type(firebase_json))
+        print(firebase_json)
         cred = credentials.Certificate(firebase_json)
         firebase_admin.initialize_app(cred, {"databaseURL" : FIREBASE_URL})
         print("ACTIVE")
         return True
     except:
+        print("false")
         return False
 
 
@@ -356,13 +357,14 @@ def prepare_chain(vstore : AstraDB,prompt_template : str,model : ChatOpenAI, tra
 @retry_with_exponential_backoff
 def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMessageHistory, invoke_arg1 : dict, config : dict)-> str:
     #if enabled_cookies : populate_chat_history(config["configurable"]["user_id"])
+    print("getting response")
     ai_resp = chain.invoke(invoke_arg1, config = config)
     resp = None
     if enabled_cookies :
         if (REFERENCE == None) :
-            set_chat_hist(session_id)
+            set_chat_hist(config["configurable"]["user_id"])
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
-            
+        print("pushed")
 
     # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
