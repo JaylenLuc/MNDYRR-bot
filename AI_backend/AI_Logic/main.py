@@ -71,8 +71,8 @@ TRAIN_EMPATHETIC_DIALOGUES_CSV = CURR_DIR + r"train.csv"
 TRAIN_EMPATHETIC_DIALOGUES_DIR = CURR_DIR + r"empatheticdialogues"
 EMPATHIC_DATA_FAISS = CURR_DIR + r"empathic_faiss"
 MOD_DATA = CURR_DIR + r"modified.csv"
-FIREBASE_JSON =  r"AI_Logic/mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
-#FIREBASE_JSON = os.getenv("FIREBASE_JSON")
+#FIREBASE_JSON = CURR_DIR + r"mndyrr-28244-firebase-adminsdk-viqq8-75d7629ad7.json"
+FIREBASE_JSON = os.getenv("FIREBASE_JSON")
 REFERENCE = None
 VALID_PATH = CURR_DIR + r"valid.csv"
 def start_firebase():
@@ -85,7 +85,6 @@ def start_firebase():
         print("ACTIVE")
         return True
     except:
-        print("false")
         return False
 
 
@@ -362,7 +361,7 @@ def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMe
     resp = None
     if enabled_cookies :
         if (REFERENCE == None) :
-            set_chat_hist(config["configurable"]["user_id"])
+            set_chat_hist(session_id)
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
         print("pushed")
 
