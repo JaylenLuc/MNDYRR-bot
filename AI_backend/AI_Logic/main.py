@@ -53,8 +53,8 @@ FIREBASE_URL = os.getenv("FIREBASE_URL")
 # LANGFUSE_SEC_KEY = os.environ.get("LANGFUSE_SEC_KEY")
 # LANGFUSE_PUBKEY = os.environ.get("LANGFUSE_PUBKEY")
 # LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST")
-OPEN_AI_TEMP = .8
-OPEN_AI_TOP_P = .8
+OPEN_AI_TEMP = .5
+OPEN_AI_TOP_P = .7
 # OPEN_AI_TOP_K = .7
 #openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 
 # 18994 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
@@ -398,7 +398,8 @@ def populate_chat_history(session_id : str) -> dict:
                                                                                 -int(x[0].split('-')[1]),
                                                                                 -int(x[0].split('-')[2]), 
                                                                                 -int(x[0].split('-')[3]), 
-                                                                                -int(x[0].split('-')[4])) 
+                                                                                -int(x[0].split('-')[4]),
+                                                                                -int(x[0].split('-')[5]),) 
                                                                             ))
         for k,v in res_chat_history.items():
             #k = '-'.join((str(k.year),str(k.month),str(k.day),str(k.hour),str(k.minute),str(k.second)))
