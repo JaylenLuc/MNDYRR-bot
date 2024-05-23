@@ -59,7 +59,7 @@ OPEN_AI_TOP_P = .7
 #openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 
 # 18994 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
 
-CONTEXT_COUNT = 15
+CONTEXT_COUNT = 25
 #data for training and for retreival
 TEMP_CHAT_HISTORY = {}
 TEMP_USER_ID = "TEST_USER"
