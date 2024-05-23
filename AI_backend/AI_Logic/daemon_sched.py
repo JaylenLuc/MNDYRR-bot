@@ -14,14 +14,16 @@ def send_astra():
     ASTRA_DB_COLLECTION_ONE = os.getenv("ASTRA_DB_COLLECTION_ONE")
     embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
     while (True):
-        print("send ", time.time()) #push for next commit
+       
         vstore = AstraDB(
             embedding=embedding,
             collection_name=ASTRA_DB_COLLECTION_ONE,
             token=ASTRA_DB_APPLICATION_TOKEN,
             api_endpoint=ASTRA_DB_API_ENDPOINT,
         )
-        vstore.similarity_search("Everything's ok", k=1)
+        res = vstore.similarity_search("Everything's ok", k=1)
+        print("stub read res: ",res)
+        print("send ", time.time()) #push for next commit
         time.sleep(144000.0)
     return
 if __name__ == "__main__":
