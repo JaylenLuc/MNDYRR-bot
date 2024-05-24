@@ -122,7 +122,7 @@ def start_RAG() -> list:
     relevant advice, or resources to help the individual as much as possible. \
     Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!\
     Then Classify the Question into one of the following classes if it is appropriate. If not then do not classify.
-    Classes: [Anxiety, Suicidal, Depressed, Financial Hardship, Stressed, Mental Health, substance abuse]
+    Classes: [Anxiety, Suicidal, Depression, Financial Hardship, Stressed, Mental Health, substance abuse, planned parenthood, physical health, personal hygiene, residential treatment, bereavement]
     Context: {context}
     Training Data: {train_data}
     Question: {question}
@@ -130,7 +130,7 @@ def start_RAG() -> list:
     Your Classification:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model="gpt-4o", temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
     #model = 'ft:gpt-3.5-turbo-0125:personal::9FrftTrx'
 
 
@@ -373,6 +373,10 @@ def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMe
     # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
     # print("databse match :", REFERENCE.get() )
+    # class_ind = resp[1]["AIMessage"].find("Classification:")
+    # resp[1]["AIMessage"] = resp[1]["AIMessage"][: class_ind]
+    # classification = resp[1]["AIMessage"][class_ind + len('Classification:'):]
+    # print("class: ",classification)
     return resp #[currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
 def set_chat_hist(session_id : str):
     global REFERENCE
