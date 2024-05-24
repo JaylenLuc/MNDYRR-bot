@@ -123,12 +123,10 @@ def start_RAG() -> list:
     Be encouraging, act like you are the human's parent and that you genuinely love them. Feel free to use emojis when appropriate!\
     Then Classify the Question into one of the following classes if it is appropriate. If not then do not classify.
     Classes: [Anxiety, Suicidal, Depression, Financial Hardship, Stressed, Mental Health, substance abuse, planned parenthood, physical health, personal hygiene, residential treatment, bereavement]
-    Then, provide relevant resources that the human can use to help themselves if appropriate.
     Context: {context}
     Training Data: {train_data}
     Question: {question}
     Your answer:
-    Resources:
     """
 
     model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model="gpt-4", temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
