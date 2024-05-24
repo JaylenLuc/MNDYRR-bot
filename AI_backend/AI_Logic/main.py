@@ -129,7 +129,7 @@ def start_RAG() -> list:
     Your answer:
     """
 
-    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model="gpt-4", temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
+    model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model="gpt-3.5", temperature=OPEN_AI_TEMP, model_kwargs={"top_p": OPEN_AI_TOP_P }) 
     #model = 'ft:gpt-3.5-turbo-0125:personal::9FrftTrx'
 
 
