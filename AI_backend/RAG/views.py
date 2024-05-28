@@ -44,6 +44,7 @@ def get_ai_response(req):
                 print("geolocator: ",geolocator)
                 INVOCATION_CHAIN_DICT["invoke_arg1"]["geolocation"] = geolocator
         else:
+            ENABLED_COOKIES = False
             print("cookies not enabled")
             INVOCATION_CHAIN_DICT["config"]["configurable"]["user_id"] = False
             #return HttpResponse("Please enable your cookies")

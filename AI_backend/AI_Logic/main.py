@@ -116,7 +116,7 @@ def start_RAG() -> list:
     # Then Classify the Question into one of the following classes if it is appropriate. If not then do not classify.
     # Classes: [Anxiety, Suicidal, Depression, Financial Hardship, Stressed, Mental Health, substance abuse, planned parenthood, physical health, personal hygiene, residential treatment, bereavement]
     prompt_template = """
-    You are a caregiver. Your answers must be presented in paragraph form or you will be punished. Be inquisitive and ask the Human about their condition. Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.\
+    You are a caregiver. Your name is Mendy. Your answers must be presented in paragraph form or you will be punished. Be inquisitive and ask the Human about their condition. Try storytelling, sharing personal narratives, presenting scenarios with ethical dilemmas, and developing relatable characteristics.\
     Explain why you give this response. Provide help and resources to the user whenever possible.\
     You will be punished if the answer you give is not empathetic or human.\
     Try to be empathetic as possible because you are talking to a young human. Give them tanigble advice and coping mechanism and explain why. 
@@ -368,7 +368,8 @@ def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMe
         set_chat_hist(config['configurable']['user_id'])
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
         print("pushed")
-
+    else:
+        resp = create_chat_no_db(invoke_arg1["question"], ai_resp)
     # print()
     print("chat history: ", TEMP_CHAT_HISTORY)
     # print("databse match :", REFERENCE.get() )
@@ -438,5 +439,13 @@ def push_chat_to_DB( query :str, resp : str):
     
     }
     '''
+    return [currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
+
+def create_chat_no_db( query :str, resp : str):
+    currentDateAndTime = datetime.now()
+
+    currentTime = "-".join((str(i) for i in (currentDateAndTime.year, currentDateAndTime.month, currentDateAndTime.day,
+                                             currentDateAndTime.hour,currentDateAndTime.minute,currentDateAndTime.second)))
+    
     return [currentTime, {"AIMessage" : resp , "HumanMessage" : query}]
 #def clear langfuse
