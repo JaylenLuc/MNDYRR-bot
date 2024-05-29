@@ -367,6 +367,7 @@ def get_response( session_id:str, enabled_cookies : bool, chain : RunnableWithMe
         #if (REFERENCE == None) : #becuase REFERENCE doesnt equal None so it doesnt update and always pushes to the first user signed in
         set_chat_hist(config['configurable']['user_id'])
         resp = push_chat_to_DB(invoke_arg1["question"], ai_resp)
+        add_session_history(session_id, TEMP_CONV_ID, invoke_arg1["question"], ai_resp)
         print("pushed")
     else:
         resp = create_chat_no_db(invoke_arg1["question"], ai_resp)
