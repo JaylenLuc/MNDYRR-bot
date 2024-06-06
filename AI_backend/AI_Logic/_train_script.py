@@ -1,3 +1,4 @@
+from langchain_openai import OpenAIEmbeddings
 import openai
 import os 
 from dotenv import load_dotenv
@@ -110,25 +111,70 @@ def _format_data(_path : str , format_path:str) -> None:
                 # if (idx == 4): 
                 #     print("bruh")
                 #     break
+from langchain_community.vectorstores.astradb import AstraDB
+load_dotenv()
+#ASTRADB KEYS
+ASTRA_DB_APPLICATION_TOKEN = os.getenv("ASTRA_DB_APPLICATION_TOKEN")#CHANGE IF DATABASE COLLECTION CHANGES
+ASTRA_DB_API_ENDPOINT = os.getenv("ASTRA_DB_API_ENDPOINT") #CHANGE IF DATABASE COLLECTION CHANGES
+#OPENAI KEYS
+OPEN_AI_API_KEY = os.getenv("OPENAI_API_KEY")
+#ASTRADB COLLECTION NAME
+ASTRA_DB_COLLECTION = os.getenv("ASTRA_DB_COLLECTION") #CHANGE IF DATABASE COLLECTION CHANGES
+ASTRA_DB_COLLECTION_ONE = os.getenv("ASTRA_DB_COLLECTION_ONE")
+FIREBASE_URL = os.getenv("FIREBASE_URL")
+embedding = OpenAIEmbeddings(api_key=OPEN_AI_API_KEY)
+vstore = AstraDB(
+    embedding=embedding,
+    collection_name=ASTRA_DB_COLLECTION_ONE,
+    token=ASTRA_DB_APPLICATION_TOKEN,
+    api_endpoint=ASTRA_DB_API_ENDPOINT,
+)
+from langchain_core.documents import Document
+def populate_db_jstest(vstore : AstraDB) -> None:
+    #Abirate/english_quotes or jstet/quotes-500k
+    
+    print("An example entry:")
+
+    #POPULATE TEMP DATABSE WITH SOME DOCUEMNTS
+    docs = []
+    with open(FORMATTED_VALID_DATA, "r") as f:
+        _dataset = f.readlines()
+        
+        for entry in _dataset:
+            #metadata = {} 
+            # if entry["category"]:
+            #     # Add metadata tags to the metadata dictionary
+            #     for tag in entry["category"].split(","):
+            #         tag = re.sub(r"[^a-zA-Z]+", '_', tag.strip())
+            #         metadata[tag.strip()] = "y"
+            # Add a LangChain document with the quote and metadata tags
+            doc = Document(page_content=entry)
+            docs.append(doc)
+    insert_documents(docs[1000 :], vstore)
 
 
+def insert_documents(docs : list, vstore :AstraDB) -> None:
+    inserted_ids = vstore.add_documents(docs)
+    print(f"\nInserted {len(inserted_ids)} documents.")
     
 if __name__ == "__main__":
     #_format_data(VALID_PATH, FORMATTED_VALID_DATA)
     #_format_data(TRAIN_PATH, FORMATTED_TRAIN_DATA)
-    print("PREPROCESSING DONE")
+#     print("PREPROCESSING DONE")
 
-   # _create_job()
+#    # _create_job()
 
-    #num_steps = number of lines / batch_size
+#     #num_steps = number of lines / batch_size
 
-    content = client.files.retrieve_content('file-D75cuF7QfuKFM1Tpq8IHlzhy')
-    # print(type(content))
-    # with open(STATS, 'w') as training_res:
-    #     training_res.write(content)
-    #_create_job()
-    #client.fine_tuning.jobs.cancel('ftjob-owkfQeIqkR7o9kod3MIYKMDN')
-    _print_check_jobs('ftjob-I5tUWodcBjrSPiumsHEs6rX7')
+#     content = client.files.retrieve_content('file-D75cuF7QfuKFM1Tpq8IHlzhy')
+#     # print(type(content))
+#     # with open(STATS, 'w') as training_res:
+#     #     training_res.write(content)
+#     #_create_job()
+#     #client.fine_tuning.jobs.cancel('ftjob-owkfQeIqkR7o9kod3MIYKMDN')
+#     _print_check_jobs('ftjob-I5tUWodcBjrSPiumsHEs6rX7')
+
+    populate_db_jstest(vstore)
 
     ''' 
     TRY 1:
